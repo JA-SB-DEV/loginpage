@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:local_auth/local_auth.dart';
-import 'main.dart';
-import 'home.dart';
+import 'package:loginpage/Models/user.dart';
+import '../Widgets/BottonNavBar/home.dart';
+import '../Widgets/dark_theme.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -271,15 +272,37 @@ class _LoginScreenState extends State<LoginScreen> {
                           }
                           setState(() => _isLoading = true);
                           // Credenciales temporales
-                          const tempEmail = 'admin@heris.com';
-                          const tempPassword = '1234';
+                          //const tempEmail = 'admin@heris.com';
+                          //const tempPassword = '1234';
+                          var user = currentUser;
 
                           await Future.delayed(
                             const Duration(milliseconds: 600),
                           ); // Simula carga
 
-                          if (_emailController.text == tempEmail &&
-                              _passwordController.text == tempPassword) {
+                          if (_emailController.text == user.email &&
+                              _passwordController.text == user.token) {
+                            if (selectedCity != user.city) {
+                              setState(() => _isLoading = false);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    'Ciudad incorrecta. Seleccionaste ${selectedCity}, pero el usuario es de ${user.city}.',
+                                  ),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                              return;
+                            } else if (user.idrole != '3') {
+                              setState(() => _isLoading = false);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('No tienes permisos de acceso'),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                              return;
+                            }
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
                                 content: Text('¡Inicio de sesión exitoso!'),

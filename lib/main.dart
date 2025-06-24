@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'login.dart';
-
-final ValueNotifier<ThemeMode> themeNotifier = ValueNotifier(ThemeMode.light);
+import 'Views/login.dart';
+import 'Widgets/dark_theme.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();

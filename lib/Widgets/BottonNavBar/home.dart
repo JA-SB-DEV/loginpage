@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'dashboard.dart';
-import 'inventory.dart';
-import 'shipments.dart';
-import 'settings.dart';
+import '../../Views/dashboard.dart';
+import '../../Views/inventory.dart';
+import '../../Views/shipments.dart';
+import '../../Views/Management/settings.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});

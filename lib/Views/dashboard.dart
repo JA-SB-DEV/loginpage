@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'main.dart'; // Importa para acceder a themeNotifier
+import 'package:loginpage/Controllers/dark_theme_controller.dart';
+import '../Widgets/dark_theme.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
@@ -26,23 +27,7 @@ class DashboardScreen extends StatelessWidget {
           ),
         ),
         iconTheme: IconThemeData(color: colorScheme.primary),
-        actions: [
-          IconButton(
-            icon: Icon(
-              themeNotifier.value == ThemeMode.dark
-                  ? Icons.light_mode_outlined
-                  : Icons.dark_mode_outlined,
-              color: colorScheme.primary,
-            ),
-            tooltip: 'Cambiar modo',
-            onPressed: () {
-              themeNotifier.value =
-                  themeNotifier.value == ThemeMode.dark
-                      ? ThemeMode.light
-                      : ThemeMode.dark;
-            },
-          ),
-        ],
+        actions: [ThemeToggleButton()],
       ),
       body: Center(
         child: Column(

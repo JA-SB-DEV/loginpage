@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:local_auth/local_auth.dart';
-import 'login.dart';
+import '../login.dart';
 import 'manage_branches.dart';
 import 'manage_users.dart';
-import 'main.dart';
+import '../../Widgets/dark_theme.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
