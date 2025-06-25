@@ -11,6 +11,8 @@ class DashboardScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final width = MediaQuery.of(context).size.width;
+    final isDesktop = width > 900;
 
     return Scaffold(
       backgroundColor: colorScheme.background,
@@ -23,45 +25,77 @@ class DashboardScreen extends StatelessWidget {
           style: GoogleFonts.inter(
             color: colorScheme.primary,
             fontWeight: FontWeight.w600,
-            fontSize: 20,
+            fontSize: isDesktop ? 26 : 20,
             letterSpacing: 1,
           ),
         ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(
-              'Resumen',
-              style: GoogleFonts.inter(
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-                color: colorScheme.primary,
-              ),
+      body: Center(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: isDesktop ? 1100 : 600),
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Text(
+                      'Resumen',
+                      style: GoogleFonts.inter(
+                        fontSize: isDesktop ? 22 : 18,
+                        fontWeight: FontWeight.w700,
+                        color: colorScheme.primary,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    isDesktop
+                        ? Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: _DashboardCard(
+                                icon: Icons.inventory_2_outlined,
+                                label: 'Inventario',
+                                value: '120',
+                                color: Colors.teal,
+                              ),
+                            ),
+                            const SizedBox(width: 18),
+                            Expanded(
+                              child: _DashboardCard(
+                                icon: Icons.local_shipping_outlined,
+                                label: 'Envíos',
+                                value: '8',
+                                color: Colors.orange,
+                              ),
+                            ),
+                          ],
+                        )
+                        : Column(
+                          children: [
+                            _DashboardCard(
+                              icon: Icons.inventory_2_outlined,
+                              label: 'Inventario',
+                              value: '120',
+                              color: Colors.teal,
+                            ),
+                            const SizedBox(height: 18),
+                            _DashboardCard(
+                              icon: Icons.local_shipping_outlined,
+                              label: 'Envíos',
+                              value: '8',
+                              color: Colors.orange,
+                            ),
+                          ],
+                        ),
+                    const SizedBox(height: 24),
+                    // Accesos rápidos eliminados para un dashboard más limpio.
+                  ],
+                );
+              },
             ),
-            const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                _DashboardCard(
-                  icon: Icons.inventory_2_outlined,
-                  label: 'Inventario',
-                  value: '120',
-                  color: Colors.teal,
-                ),
-                _DashboardCard(
-                  icon: Icons.local_shipping_outlined,
-                  label: 'Envíos',
-                  value: '8',
-                  color: Colors.orange,
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
-            // Accesos rápidos eliminados para un dashboard más limpio.
-          ],
+          ),
         ),
       ),
       floatingActionButton: SpeedDial(
