@@ -11,7 +11,6 @@ class DashboardScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
       backgroundColor: colorScheme.background,
@@ -28,8 +27,6 @@ class DashboardScreen extends StatelessWidget {
             letterSpacing: 1,
           ),
         ),
-        iconTheme: IconThemeData(color: colorScheme.primary),
-        actions: [ThemeToggleButton()],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),

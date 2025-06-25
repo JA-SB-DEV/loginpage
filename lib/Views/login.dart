@@ -3,7 +3,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:loginpage/Models/user.dart';
 import '../Widgets/BottonNavBar/home.dart';
-import '../Widgets/dark_theme.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});

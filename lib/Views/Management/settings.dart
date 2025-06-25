@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:local_auth/local_auth.dart';
+import 'package:loginpage/Controllers/dark_theme_controller.dart';
 import '../login.dart';
 import 'manage_branches.dart';
 import 'manage_users.dart';
-import '../../Widgets/dark_theme.dart';
+// import '../../Widgets/dark_theme.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -44,7 +45,6 @@ class SettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
       backgroundColor: colorScheme.background,
@@ -197,30 +197,7 @@ class SettingsScreen extends StatelessWidget {
               ),
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8),
-                child: ValueListenableBuilder<ThemeMode>(
-                  valueListenable: themeNotifier,
-                  builder: (context, currentMode, _) {
-                    return SwitchListTile(
-                      title: Text(
-                        currentMode == ThemeMode.dark
-                            ? 'Modo oscuro'
-                            : 'Modo claro',
-                        style: GoogleFonts.inter(fontWeight: FontWeight.w600),
-                      ),
-                      value: currentMode == ThemeMode.dark,
-                      onChanged: (val) {
-                        themeNotifier.value =
-                            val ? ThemeMode.dark : ThemeMode.light;
-                      },
-                      secondary: Icon(
-                        currentMode == ThemeMode.dark
-                            ? Icons.dark_mode_outlined
-                            : Icons.light_mode_outlined,
-                        color: colorScheme.primary,
-                      ),
-                    );
-                  },
-                ),
+                child: ThemeSwitchTile(),
               ),
             ),
             const SizedBox(height: 24),

@@ -23,8 +23,6 @@ class InventoryScreen extends StatelessWidget {
             letterSpacing: 1,
           ),
         ),
-        iconTheme: IconThemeData(color: colorScheme.primary),
-        actions: const [ThemeToggleButton()],
       ),
       body: Center(
         child: Text(

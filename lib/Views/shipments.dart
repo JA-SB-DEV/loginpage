@@ -118,8 +118,6 @@ class _ShipmentsScreenState extends State<ShipmentsScreen> {
             letterSpacing: 1,
           ),
         ),
-        iconTheme: IconThemeData(color: colorScheme.primary),
-        actions: const [ThemeToggleButton()],
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {},
