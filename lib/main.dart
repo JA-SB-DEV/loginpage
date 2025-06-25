@@ -19,11 +19,13 @@ class MyApp extends StatelessWidget {
           title: 'HERIS Envíos',
           debugShowCheckedModeBanner: false,
           theme: ThemeData(
+            fontFamily: 'Helvetica',
             colorScheme: ColorScheme.fromSeed(seedColor: Colors.teal),
             useMaterial3: true,
             brightness: Brightness.light,
           ),
           darkTheme: ThemeData(
+            fontFamily: 'Helvetica',
             colorScheme: ColorScheme.fromSeed(
               seedColor: Colors.teal,
               brightness: Brightness.dark,

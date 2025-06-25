@@ -3,6 +3,7 @@ import '../../Views/dashboard.dart';
 import '../../Views/inventory.dart';
 import '../../Views/shipments.dart';
 import '../../Views/Management/settings.dart';
+import 'package:loginpage/Views/statistics.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -14,11 +15,12 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
 
-  final List<Widget> _pages = const [
+  final List<Widget> _pages = [
     DashboardScreen(),
     InventoryScreen(),
     ShipmentsScreen(),
     SettingsScreen(),
+    StatisticsScreen(), // <-- Nueva pestaña
   ];
 
   @override
@@ -33,21 +35,21 @@ class _HomeScreenState extends State<HomeScreen> {
         unselectedItemColor: colorScheme.onSurface.withOpacity(0.6),
         elevation: 8,
         type: BottomNavigationBarType.fixed,
-        items: const [
+        items: [
           BottomNavigationBarItem(
-            icon: Icon(Icons.dashboard_outlined),
-            label: 'Inicio',
+            icon: Icon(Icons.dashboard),
+            label: 'Dashboard',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.inventory_2_outlined),
+            icon: Icon(Icons.inventory),
             label: 'Inventario',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.local_shipping_outlined),
+            icon: Icon(Icons.local_shipping),
             label: 'Envíos',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.settings_outlined),
+            icon: Icon(Icons.settings),
             label: 'Configuración',
           ),
         ],

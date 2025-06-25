@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:loginpage/Controllers/dark_theme_controller.dart';
+import 'package:loginpage/Views/statistics.dart';
+import 'package:loginpage/Views/add_product_screen.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
@@ -28,39 +31,120 @@ class DashboardScreen extends StatelessWidget {
         iconTheme: IconThemeData(color: colorScheme.primary),
         actions: [ThemeToggleButton()],
       ),
-      body: Center(
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Icon(
-              Icons.local_shipping_outlined,
-              size: 60,
-              color:
-                  isDark
-                      ? colorScheme.primary.withOpacity(0.3)
-                      : Colors.grey[300],
-            ),
-            const SizedBox(height: 32),
             Text(
-              'Bienvenido',
+              'Resumen',
               style: GoogleFonts.inter(
-                fontSize: 24,
+                fontSize: 18,
                 fontWeight: FontWeight.w700,
-                color: colorScheme.onBackground,
-                letterSpacing: 1,
+                color: colorScheme.primary,
               ),
             ),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _DashboardCard(
+                  icon: Icons.inventory_2_outlined,
+                  label: 'Inventario',
+                  value: '120',
+                  color: Colors.teal,
+                ),
+                _DashboardCard(
+                  icon: Icons.local_shipping_outlined,
+                  label: 'Envíos',
+                  value: '8',
+                  color: Colors.orange,
+                ),
+              ],
+            ),
+            const SizedBox(height: 24),
+            // Accesos rápidos eliminados para un dashboard más limpio.
+          ],
+        ),
+      ),
+      floatingActionButton: SpeedDial(
+        icon: Icons.menu,
+        activeIcon: Icons.close,
+        backgroundColor: colorScheme.primary,
+        foregroundColor: Colors.white,
+        children: [
+          SpeedDialChild(
+            child: const Icon(Icons.add_box_outlined),
+            label: 'Nuevo producto',
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const AddProductScreen(),
+                ),
+              );
+            },
+          ),
+          SpeedDialChild(
+            child: const Icon(Icons.local_shipping),
+            label: 'Nuevo envío',
+            onTap: () {
+              // Acción para agregar envío
+            },
+          ),
+          SpeedDialChild(
+            child: const Icon(Icons.bar_chart_outlined),
+            label: 'Estadísticas',
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const StatisticsScreen(),
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DashboardCard extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String value;
+  final Color color;
+
+  const _DashboardCard({
+    required this.icon,
+    required this.label,
+    required this.value,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Container(
+        width: 140,
+        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 12),
+        child: Column(
+          children: [
+            Icon(icon, color: color, size: 32),
             const SizedBox(height: 8),
             Text(
-              'Gestiona los envíos de la bodega de forma simple.',
+              value,
               style: GoogleFonts.inter(
-                fontSize: 16,
-                color: colorScheme.onBackground.withOpacity(0.7),
-                fontWeight: FontWeight.w400,
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: color,
               ),
-              textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: 4),
+            Text(label, style: GoogleFonts.inter(fontSize: 14)),
           ],
         ),
       ),

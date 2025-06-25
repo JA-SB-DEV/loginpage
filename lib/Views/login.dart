@@ -19,7 +19,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   final List<String> cities = ['Valledupar', 'Santa Marta'];
   bool _obscurePassword = true;
-  bool _isLoading = false; // <-- Indicador de carga
+  bool _isLoading = false;
 
   Future<void> _authenticateWithBiometrics() async {
     if (selectedCity == null) {
@@ -72,38 +72,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
     return Scaffold(
       backgroundColor: colorScheme.background,
-      appBar: AppBar(
-        backgroundColor: colorScheme.background,
-        elevation: 0,
-        centerTitle: true,
-        title: Text(
-          'Iniciar sesión',
-          style: GoogleFonts.inter(
-            color: colorScheme.primary,
-            fontWeight: FontWeight.w600,
-            fontSize: 20,
-            letterSpacing: 1,
-          ),
-        ),
-        iconTheme: IconThemeData(color: colorScheme.primary),
-        actions: [
-          IconButton(
-            icon: Icon(
-              themeNotifier.value == ThemeMode.dark
-                  ? Icons.light_mode_outlined
-                  : Icons.dark_mode_outlined,
-              color: colorScheme.primary,
-            ),
-            tooltip: 'Cambiar modo',
-            onPressed: () {
-              themeNotifier.value =
-                  themeNotifier.value == ThemeMode.dark
-                      ? ThemeMode.light
-                      : ThemeMode.dark;
-            },
-          ),
-        ],
-      ),
       body: Center(
         child: Stack(
           alignment: Alignment.center,
@@ -111,20 +79,17 @@ class _LoginScreenState extends State<LoginScreen> {
             SingleChildScrollView(
               child: Container(
                 margin: const EdgeInsets.symmetric(horizontal: 24),
-                padding: const EdgeInsets.all(24),
+                padding: const EdgeInsets.all(28),
                 decoration: BoxDecoration(
                   color: colorScheme.surface,
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: colorScheme.outline.withOpacity(0.1),
-                  ),
+                  borderRadius: BorderRadius.circular(24),
                   boxShadow: [
                     BoxShadow(
                       color: colorScheme.shadow.withOpacity(
-                        isDark ? 0.05 : 0.03,
+                        isDark ? 0.10 : 0.06,
                       ),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
+                      blurRadius: 16,
+                      offset: const Offset(0, 4),
                     ),
                   ],
                 ),
@@ -133,22 +98,31 @@ class _LoginScreenState extends State<LoginScreen> {
                   children: [
                     Icon(
                       Icons.local_shipping_outlined,
-                      size: 48,
+                      size: 56,
                       color: colorScheme.primary,
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 10),
                     Text(
                       'HERIS',
                       style: GoogleFonts.inter(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w700,
+                        fontSize: 26,
+                        fontWeight: FontWeight.w800,
                         color: colorScheme.primary,
                         letterSpacing: 2,
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 6),
+                    Text(
+                      'Gestión de inventarios y envíos',
+                      style: GoogleFonts.inter(
+                        fontSize: 14,
+                        color: colorScheme.onSurface.withOpacity(0.7),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
                     DropdownButtonFormField<String>(
                       value: selectedCity,
+                      isExpanded: true,
                       decoration: InputDecoration(
                         prefixIcon: Icon(
                           Icons.location_on,
@@ -157,14 +131,23 @@ class _LoginScreenState extends State<LoginScreen> {
                         labelText: 'Ciudad',
                         labelStyle: GoogleFonts.inter(
                           color: colorScheme.onSurface,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        hintText: 'Selecciona una ciudad',
+                        hintStyle: GoogleFonts.inter(
+                          color: colorScheme.onSurface.withOpacity(0.5),
                         ),
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(16),
                           borderSide: BorderSide(color: colorScheme.primary),
                         ),
                         filled: true,
                         fillColor: colorScheme.surfaceVariant.withOpacity(
-                          isDark ? 0.2 : 0.7,
+                          isDark ? 0.18 : 0.85,
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          vertical: 18,
+                          horizontal: 16,
                         ),
                       ),
                       items:
@@ -172,11 +155,23 @@ class _LoginScreenState extends State<LoginScreen> {
                               .map(
                                 (city) => DropdownMenuItem(
                                   value: city,
-                                  child: Text(
-                                    city,
-                                    style: GoogleFonts.inter(
-                                      color: colorScheme.onSurface,
-                                    ),
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        Icons.apartment,
+                                        color: colorScheme.primary,
+                                        size: 20,
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        city,
+                                        style: GoogleFonts.inter(
+                                          color: colorScheme.onSurface,
+                                          fontWeight: FontWeight.w500,
+                                          fontSize: 16,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
                               )
@@ -252,14 +247,14 @@ class _LoginScreenState extends State<LoginScreen> {
                     SizedBox(
                       width: double.infinity,
                       height: 48,
-                      child: OutlinedButton.icon(
-                        icon: Icon(Icons.login, color: colorScheme.primary),
-                        style: OutlinedButton.styleFrom(
-                          side: BorderSide(color: colorScheme.primary),
+                      child: ElevatedButton.icon(
+                        icon: const Icon(Icons.login),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: colorScheme.primary,
+                          foregroundColor: Colors.white,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          backgroundColor: colorScheme.surface,
                         ),
                         onPressed: () async {
                           if (selectedCity == null) {
@@ -271,9 +266,6 @@ class _LoginScreenState extends State<LoginScreen> {
                             return;
                           }
                           setState(() => _isLoading = true);
-                          // Credenciales temporales
-                          //const tempEmail = 'admin@heris.com';
-                          //const tempPassword = '1234';
                           var user = currentUser;
 
                           await Future.delayed(
@@ -287,7 +279,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
                                   content: Text(
-                                    'Ciudad incorrecta. Seleccionaste ${selectedCity}, pero el usuario es de ${user.city}.',
+                                    'Ciudad incorrecta. Seleccionaste $selectedCity, pero el usuario es de ${user.city}.',
                                   ),
                                   backgroundColor: Colors.red,
                                 ),
@@ -330,14 +322,12 @@ class _LoginScreenState extends State<LoginScreen> {
                           'Iniciar sesión',
                           style: GoogleFonts.inter(
                             fontSize: 16,
-                            color: colorScheme.primary,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
                       ),
                     ),
                     const SizedBox(height: 12),
-                    // Botón biométrico
                     SizedBox(
                       width: double.infinity,
                       height: 48,

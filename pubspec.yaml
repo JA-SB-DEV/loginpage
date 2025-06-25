@@ -36,7 +36,10 @@ dependencies:
   cupertino_icons: ^1.0.8
   google_fonts: ^6.2.1
   local_auth: ^2.1.7
-
+  fl_chart: ^0.66.2
+  flutter_speed_dial: ^7.0.0
+  qr_flutter: ^4.1.0
+  printing: ^5.11.0
 
 dev_dependencies:
   flutter_test:
@@ -91,3 +94,7 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+  fonts:
+    - family: Helvetica
+      fonts:
+        - asset: assets/fonts/Helvetica.ttf
