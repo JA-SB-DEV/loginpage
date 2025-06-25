@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
-import 'package:loginpage/Controllers/dark_theme_controller.dart';
 import 'package:loginpage/Views/statistics.dart';
 import 'package:loginpage/Views/add_product_screen.dart';
 
