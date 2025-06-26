@@ -1,40 +1,59 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
 class User {
-  String? token;
   String? id;
   String? name;
   String? email;
-  //String? phone;
-  String? city;
-  String? idrole;
+  String? phone;
+  Timestamp? createdAt;
+  String? city; // ID del documento de ciudad
+  String? sede; // ID del documento de sede
+  String? idrole; // ID del documento de rol
 
-  User({this.id, this.name, this.email, this.token, this.city, this.idrole});
+  User({
+    this.id,
+    this.name,
+    this.email,
+    this.phone,
+    this.createdAt,
+    this.city,
+    this.sede,
+    this.idrole,
+  });
 
-  User.fromJson(Map<String, dynamic> json) {
-    id = json['id'];
-    name = json['name'];
-    email = json['email'];
-    token = json['token'];
-    city = json['city'];
-    idrole = json['idrole'];
+  factory User.fromFirestore(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>;
+    return User(
+      id: doc.id,
+      name: data['nombre'] ?? '',
+      email: data['email'] ?? '',
+      phone: data['telefono'] ?? '',
+      createdAt: data['fecha_registro'] as Timestamp?,
+      city: data['ciudad'] ?? '',
+      sede: data['sede'] ?? '',
+      idrole: data['id_role'] ?? '',
+    );
   }
 
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = <String, dynamic>{};
-    data['id'] = id;
-    data['name'] = name;
-    data['email'] = email;
-    data['token'] = token;
-    data['city'] = city;
-    data['idrole'] = idrole;
-    return data;
+  Map<String, dynamic> toFirestore() {
+    return {
+      'nombre': name,
+      'email': email,
+      'telefono': phone,
+      'fecha_registro': createdAt ?? FieldValue.serverTimestamp(),
+      'ciudad': city,
+      'sede': sede,
+      'id_role': idrole,
+    };
+  }
+
+  Future<void> crearUsuarioDesdeAuth() async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) throw Exception('No hay usuario autenticado');
+    id = uid;
+
+    final docRef = FirebaseFirestore.instance.collection('usuarios').doc(id);
+    await docRef.set(toFirestore());
   }
 }
-
-final User currentUser = User(
-  id: '1',
-  name: 'Daniel Peralta',
-  email: 'admin@heris.com',
-  token: '1234', //hasheado obviamente
-  city: 'Valledupar', // se le pasaria un id
-  idrole: '3',
-);
