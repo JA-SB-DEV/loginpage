@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'qr_scanner_page.dart'; // Importa tu nueva pantalla
 
 class InventoryScreen extends StatelessWidget {
   const InventoryScreen({super.key});
@@ -40,13 +41,26 @@ class InventoryScreen extends StatelessWidget {
     Color getStatusColor(String estado) {
       switch (estado) {
         case 'Disponible':
-          return Colors.green;
+          return colorScheme.secondary; // Suave, no neón
         case 'Bajo':
-          return Colors.orange;
+          return colorScheme.tertiary ?? Colors.amber.shade700;
         case 'Agotado':
-          return Colors.red;
+          return colorScheme.error.withOpacity(0.85);
         default:
           return colorScheme.primary;
+      }
+    }
+
+    Color getStatusBgColor(String estado) {
+      switch (estado) {
+        case 'Disponible':
+          return colorScheme.secondary.withOpacity(0.13);
+        case 'Bajo':
+          return (colorScheme.tertiary ?? Colors.amber).withOpacity(0.13);
+        case 'Agotado':
+          return colorScheme.error.withOpacity(0.13);
+        default:
+          return colorScheme.primary.withOpacity(0.13);
       }
     }
 
@@ -66,12 +80,97 @@ class InventoryScreen extends StatelessWidget {
           ),
         ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {},
-        icon: const Icon(Icons.add),
-        label: const Text('Agregar producto'),
-        backgroundColor: colorScheme.primary,
-        foregroundColor: Colors.white,
+      floatingActionButton: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          FloatingActionButton.extended(
+            onPressed: () {
+              // Acción para agregar producto
+            },
+            icon: const Icon(Icons.add),
+            label: const Text('Agregar producto'),
+            backgroundColor: colorScheme.primary,
+            foregroundColor: Colors.white,
+            heroTag: 'add_product',
+          ),
+          const SizedBox(width: 16),
+          FloatingActionButton(
+            onPressed: () async {
+              final qrResult = await Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const QrScannerPage()),
+              );
+              if (qrResult != null) {
+                final product = products.firstWhere(
+                  (p) => p['sku'] == qrResult,
+                  orElse: () => <String, dynamic>{},
+                );
+                if (product != null) {
+                  // Muestra detalles del producto
+                  showModalBottomSheet(
+                    context: context,
+                    shape: const RoundedRectangleBorder(
+                      borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(20),
+                      ),
+                    ),
+                    builder: (_) {
+                      return Padding(
+                        padding: const EdgeInsets.all(24),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Center(
+                              child: Container(
+                                width: 40,
+                                height: 4,
+                                margin: const EdgeInsets.only(bottom: 16),
+                                decoration: BoxDecoration(
+                                  color: Colors.grey[400],
+                                  borderRadius: BorderRadius.circular(2),
+                                ),
+                              ),
+                            ),
+                            Text(
+                              product['nombre'],
+                              style: Theme.of(context).textTheme.titleLarge,
+                            ),
+                            const SizedBox(height: 12),
+                            Text('SKU: ${product['sku']}'),
+                            Text('Categoría: ${product['categoria']}'),
+                            Text('Stock actual: ${product['stock']}'),
+                            Text('Stock mínimo: ${product['minimo']}'),
+                            Text('Estado: ${product['estado']}'),
+                            const SizedBox(height: 12),
+                            Align(
+                              alignment: Alignment.centerRight,
+                              child: TextButton(
+                                child: const Text('Cerrar'),
+                                onPressed: () => Navigator.pop(context),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  );
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Producto no encontrado para este QR'),
+                    ),
+                  );
+                }
+              }
+            },
+            backgroundColor: colorScheme.primary,
+            foregroundColor: Colors.white,
+            heroTag: 'scan_qr',
+            child: const Icon(Icons.qr_code_scanner),
+            tooltip: 'Escanear QR',
+          ),
+        ],
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       body: SafeArea(
@@ -141,9 +240,8 @@ class InventoryScreen extends StatelessWidget {
                                             width: 48,
                                             height: 48,
                                             decoration: BoxDecoration(
-                                              color: getStatusColor(
-                                                product['estado'],
-                                              ).withOpacity(0.13),
+                                              color: colorScheme.primary
+                                                  .withOpacity(0.10),
                                               borderRadius:
                                                   BorderRadius.circular(12),
                                             ),
@@ -151,9 +249,7 @@ class InventoryScreen extends StatelessWidget {
                                               product['categoria'] == 'Insumo'
                                                   ? Icons.kitchen
                                                   : Icons.bakery_dining,
-                                              color: getStatusColor(
-                                                product['estado'],
-                                              ),
+                                              color: colorScheme.primary,
                                               size: 30,
                                             ),
                                           ),
@@ -203,9 +299,8 @@ class InventoryScreen extends StatelessWidget {
                                                       vertical: 6,
                                                     ),
                                                 decoration: BoxDecoration(
-                                                  color: getStatusColor(
-                                                    product['estado'],
-                                                  ).withOpacity(0.15),
+                                                  color: colorScheme.primary
+                                                      .withOpacity(0.10),
                                                   borderRadius:
                                                       BorderRadius.circular(8),
                                                 ),
@@ -214,9 +309,7 @@ class InventoryScreen extends StatelessWidget {
                                                   style: GoogleFonts.inter(
                                                     fontWeight: FontWeight.bold,
                                                     fontSize: 16,
-                                                    color: getStatusColor(
-                                                      product['estado'],
-                                                    ),
+                                                    color: colorScheme.primary,
                                                   ),
                                                 ),
                                               ),
@@ -228,9 +321,9 @@ class InventoryScreen extends StatelessWidget {
                                                       vertical: 4,
                                                     ),
                                                 decoration: BoxDecoration(
-                                                  color: getStatusColor(
+                                                  color: getStatusBgColor(
                                                     product['estado'],
-                                                  ).withOpacity(0.18),
+                                                  ),
                                                   borderRadius:
                                                       BorderRadius.circular(8),
                                                 ),
@@ -268,7 +361,412 @@ class InventoryScreen extends StatelessWidget {
                                                       ),
                                                     ],
                                                 onSelected: (value) {
-                                                  // Aquí puedes manejar las acciones
+                                                  if (value == 'ver') {
+                                                    showModalBottomSheet(
+                                                      context: context,
+                                                      shape: const RoundedRectangleBorder(
+                                                        borderRadius:
+                                                            BorderRadius.vertical(
+                                                              top:
+                                                                  Radius.circular(
+                                                                    20,
+                                                                  ),
+                                                            ),
+                                                      ),
+                                                      builder: (_) {
+                                                        return Padding(
+                                                          padding:
+                                                              const EdgeInsets.all(
+                                                                24,
+                                                              ),
+                                                          child: Column(
+                                                            mainAxisSize:
+                                                                MainAxisSize
+                                                                    .min,
+                                                            crossAxisAlignment:
+                                                                CrossAxisAlignment
+                                                                    .start,
+                                                            children: [
+                                                              Center(
+                                                                child: Container(
+                                                                  width: 40,
+                                                                  height: 4,
+                                                                  margin:
+                                                                      const EdgeInsets.only(
+                                                                        bottom:
+                                                                            16,
+                                                                      ),
+                                                                  decoration: BoxDecoration(
+                                                                    color:
+                                                                        Colors
+                                                                            .grey[400],
+                                                                    borderRadius:
+                                                                        BorderRadius.circular(
+                                                                          2,
+                                                                        ),
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                              Text(
+                                                                product['nombre'],
+                                                                style: GoogleFonts.inter(
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .bold,
+                                                                  fontSize: 20,
+                                                                ),
+                                                              ),
+                                                              const SizedBox(
+                                                                height: 12,
+                                                              ),
+                                                              Text(
+                                                                'SKU: ${product['sku']}',
+                                                                style:
+                                                                    GoogleFonts.inter(
+                                                                      fontSize:
+                                                                          15,
+                                                                    ),
+                                                              ),
+                                                              Text(
+                                                                'Categoría: ${product['categoria']}',
+                                                                style:
+                                                                    GoogleFonts.inter(
+                                                                      fontSize:
+                                                                          15,
+                                                                    ),
+                                                              ),
+                                                              Text(
+                                                                'Stock actual: ${product['stock']}',
+                                                                style:
+                                                                    GoogleFonts.inter(
+                                                                      fontSize:
+                                                                          15,
+                                                                    ),
+                                                              ),
+                                                              Text(
+                                                                'Stock mínimo: ${product['minimo']}',
+                                                                style:
+                                                                    GoogleFonts.inter(
+                                                                      fontSize:
+                                                                          15,
+                                                                    ),
+                                                              ),
+                                                              Text(
+                                                                'Estado: ${product['estado']}',
+                                                                style:
+                                                                    GoogleFonts.inter(
+                                                                      fontSize:
+                                                                          15,
+                                                                    ),
+                                                              ),
+                                                              const SizedBox(
+                                                                height: 12,
+                                                              ),
+                                                              Align(
+                                                                alignment:
+                                                                    Alignment
+                                                                        .centerRight,
+                                                                child: TextButton(
+                                                                  child:
+                                                                      const Text(
+                                                                        'Cerrar',
+                                                                      ),
+                                                                  onPressed:
+                                                                      () => Navigator.pop(
+                                                                        context,
+                                                                      ),
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        );
+                                                      },
+                                                    );
+                                                  } else if (value ==
+                                                      'editar') {
+                                                    showModalBottomSheet(
+                                                      context: context,
+                                                      isScrollControlled: true,
+                                                      shape: const RoundedRectangleBorder(
+                                                        borderRadius:
+                                                            BorderRadius.vertical(
+                                                              top:
+                                                                  Radius.circular(
+                                                                    20,
+                                                                  ),
+                                                            ),
+                                                      ),
+                                                      builder: (_) {
+                                                        final nombreController =
+                                                            TextEditingController(
+                                                              text:
+                                                                  product['nombre'],
+                                                            );
+                                                        final skuController =
+                                                            TextEditingController(
+                                                              text:
+                                                                  product['sku'],
+                                                            );
+                                                        final stockController =
+                                                            TextEditingController(
+                                                              text:
+                                                                  product['stock']
+                                                                      .toString(),
+                                                            );
+                                                        final minimoController =
+                                                            TextEditingController(
+                                                              text:
+                                                                  product['minimo']
+                                                                      .toString(),
+                                                            );
+                                                        return GestureDetector(
+                                                          onTap:
+                                                              () =>
+                                                                  FocusScope.of(
+                                                                    context,
+                                                                  ).unfocus(),
+                                                          child: DraggableScrollableSheet(
+                                                            expand: false,
+                                                            initialChildSize:
+                                                                0.65,
+                                                            minChildSize: 0.4,
+                                                            maxChildSize: 0.85,
+                                                            builder: (
+                                                              context,
+                                                              scrollController,
+                                                            ) {
+                                                              return SingleChildScrollView(
+                                                                controller:
+                                                                    scrollController,
+                                                                padding: EdgeInsets.only(
+                                                                  left: 24,
+                                                                  right: 24,
+                                                                  top: 24,
+                                                                  bottom:
+                                                                      MediaQuery.of(
+                                                                        context,
+                                                                      ).viewInsets.bottom +
+                                                                      24,
+                                                                ),
+                                                                child: Column(
+                                                                  crossAxisAlignment:
+                                                                      CrossAxisAlignment
+                                                                          .start,
+                                                                  children: [
+                                                                    Center(
+                                                                      child: Container(
+                                                                        width:
+                                                                            40,
+                                                                        height:
+                                                                            4,
+                                                                        margin: const EdgeInsets.only(
+                                                                          bottom:
+                                                                              18,
+                                                                        ),
+                                                                        decoration: BoxDecoration(
+                                                                          color:
+                                                                              Colors.grey[400],
+                                                                          borderRadius:
+                                                                              BorderRadius.circular(
+                                                                                2,
+                                                                              ),
+                                                                        ),
+                                                                      ),
+                                                                    ),
+                                                                    Text(
+                                                                      'Editar producto',
+                                                                      style: GoogleFonts.inter(
+                                                                        fontWeight:
+                                                                            FontWeight.bold,
+                                                                        fontSize:
+                                                                            22,
+                                                                      ),
+                                                                    ),
+                                                                    const SizedBox(
+                                                                      height:
+                                                                          18,
+                                                                    ),
+                                                                    TextField(
+                                                                      controller:
+                                                                          nombreController,
+                                                                      decoration: InputDecoration(
+                                                                        labelText:
+                                                                            'Nombre',
+                                                                        filled:
+                                                                            true,
+                                                                        fillColor: Theme.of(
+                                                                          context,
+                                                                        ).colorScheme.surface.withOpacity(
+                                                                          0.9,
+                                                                        ),
+                                                                        border: OutlineInputBorder(
+                                                                          borderRadius: BorderRadius.circular(
+                                                                            12,
+                                                                          ),
+                                                                        ),
+                                                                        contentPadding: const EdgeInsets.symmetric(
+                                                                          horizontal:
+                                                                              14,
+                                                                          vertical:
+                                                                              12,
+                                                                        ),
+                                                                      ),
+                                                                    ),
+                                                                    const SizedBox(
+                                                                      height:
+                                                                          14,
+                                                                    ),
+                                                                    TextField(
+                                                                      controller:
+                                                                          skuController,
+                                                                      decoration: InputDecoration(
+                                                                        labelText:
+                                                                            'SKU',
+                                                                        filled:
+                                                                            true,
+                                                                        fillColor: Theme.of(
+                                                                          context,
+                                                                        ).colorScheme.surface.withOpacity(
+                                                                          0.9,
+                                                                        ),
+                                                                        border: OutlineInputBorder(
+                                                                          borderRadius: BorderRadius.circular(
+                                                                            12,
+                                                                          ),
+                                                                        ),
+                                                                        contentPadding: const EdgeInsets.symmetric(
+                                                                          horizontal:
+                                                                              14,
+                                                                          vertical:
+                                                                              12,
+                                                                        ),
+                                                                      ),
+                                                                    ),
+                                                                    const SizedBox(
+                                                                      height:
+                                                                          14,
+                                                                    ),
+                                                                    Row(
+                                                                      children: [
+                                                                        Expanded(
+                                                                          child: TextField(
+                                                                            controller:
+                                                                                stockController,
+                                                                            keyboardType:
+                                                                                TextInputType.number,
+                                                                            decoration: InputDecoration(
+                                                                              labelText:
+                                                                                  'Stock actual',
+                                                                              filled:
+                                                                                  true,
+                                                                              fillColor: Theme.of(
+                                                                                context,
+                                                                              ).colorScheme.surface.withOpacity(
+                                                                                0.9,
+                                                                              ),
+                                                                              border: OutlineInputBorder(
+                                                                                borderRadius: BorderRadius.circular(
+                                                                                  12,
+                                                                                ),
+                                                                              ),
+                                                                              contentPadding: const EdgeInsets.symmetric(
+                                                                                horizontal:
+                                                                                    14,
+                                                                                vertical:
+                                                                                    12,
+                                                                              ),
+                                                                            ),
+                                                                          ),
+                                                                        ),
+                                                                        const SizedBox(
+                                                                          width:
+                                                                              12,
+                                                                        ),
+                                                                        Expanded(
+                                                                          child: TextField(
+                                                                            controller:
+                                                                                minimoController,
+                                                                            keyboardType:
+                                                                                TextInputType.number,
+                                                                            decoration: InputDecoration(
+                                                                              labelText:
+                                                                                  'Stock mínimo',
+                                                                              filled:
+                                                                                  true,
+                                                                              fillColor: Theme.of(
+                                                                                context,
+                                                                              ).colorScheme.surface.withOpacity(
+                                                                                0.9,
+                                                                              ),
+                                                                              border: OutlineInputBorder(
+                                                                                borderRadius: BorderRadius.circular(
+                                                                                  12,
+                                                                                ),
+                                                                              ),
+                                                                              contentPadding: const EdgeInsets.symmetric(
+                                                                                horizontal:
+                                                                                    14,
+                                                                                vertical:
+                                                                                    12,
+                                                                              ),
+                                                                            ),
+                                                                          ),
+                                                                        ),
+                                                                      ],
+                                                                    ),
+                                                                    const SizedBox(
+                                                                      height:
+                                                                          18,
+                                                                    ),
+                                                                    Align(
+                                                                      alignment:
+                                                                          Alignment
+                                                                              .centerRight,
+                                                                      child: ElevatedButton.icon(
+                                                                        icon: const Icon(
+                                                                          Icons
+                                                                              .save,
+                                                                        ),
+                                                                        style: ElevatedButton.styleFrom(
+                                                                          backgroundColor:
+                                                                              Theme.of(
+                                                                                context,
+                                                                              ).colorScheme.primary,
+                                                                          foregroundColor:
+                                                                              Colors.white,
+                                                                          shape: RoundedRectangleBorder(
+                                                                            borderRadius: BorderRadius.circular(
+                                                                              10,
+                                                                            ),
+                                                                          ),
+                                                                          padding: const EdgeInsets.symmetric(
+                                                                            horizontal:
+                                                                                24,
+                                                                            vertical:
+                                                                                12,
+                                                                          ),
+                                                                        ),
+                                                                        label: const Text(
+                                                                          'Guardar',
+                                                                        ),
+                                                                        onPressed: () {
+                                                                          // Aquí puedes guardar los cambios
+                                                                          Navigator.pop(
+                                                                            context,
+                                                                          );
+                                                                        },
+                                                                      ),
+                                                                    ),
+                                                                  ],
+                                                                ),
+                                                              );
+                                                            },
+                                                          ),
+                                                        );
+                                                      },
+                                                    );
+                                                  }
+                                                  // Aquí puedes manejar 'eliminar' si lo deseas
                                                 },
                                               ),
                                             ],
