@@ -1,8 +1,9 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:local_auth/local_auth.dart';
-import 'package:loginpage/Models/user.dart';
-import '../Widgets/BottonNavBar/home.dart';
+import 'package:loginpage/Widgets/BottonNavBar/home.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -22,9 +23,12 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> _authenticateWithBiometrics() async {
     if (selectedCity == null) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Selecciona una ciudad')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Selecciona una ciudad'),
+          backgroundColor: Colors.red,
+        ),
+      );
       return;
     }
     setState(() => _isLoading = true);
@@ -193,7 +197,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         labelText: 'Correo electrónico',
                         labelStyle: GoogleFonts.inter(
-                          color: colorScheme.onSurface,
+                          color: colorScheme.onSurface.withOpacity(0.7),
                         ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -217,7 +221,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         labelText: 'Contraseña',
                         labelStyle: GoogleFonts.inter(
-                          color: colorScheme.onSurface,
+                          color: colorScheme.onSurface.withOpacity(0.7),
                         ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -260,61 +264,101 @@ class _LoginScreenState extends State<LoginScreen> {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
                                 content: Text('Selecciona una ciudad'),
+                                backgroundColor: Colors.red,
                               ),
                             );
                             return;
                           }
+
                           setState(() => _isLoading = true);
-                          var user = currentUser;
 
-                          await Future.delayed(
-                            const Duration(milliseconds: 600),
-                          ); // Simula carga
+                          try {
+                            final credential = await FirebaseAuth.instance
+                                .signInWithEmailAndPassword(
+                                  email: _emailController.text.trim(),
+                                  password: _passwordController.text.trim(),
+                                );
 
-                          if (_emailController.text == user.email &&
-                              _passwordController.text == user.token) {
-                            if (selectedCity != user.city) {
-                              setState(() => _isLoading = false);
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    'Ciudad incorrecta. Seleccionaste $selectedCity, pero el usuario es de ${user.city}.',
-                                  ),
-                                  backgroundColor: Colors.red,
-                                ),
-                              );
-                              return;
-                            } else if (user.idrole != '3') {
-                              setState(() => _isLoading = false);
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('No tienes permisos de acceso'),
-                                  backgroundColor: Colors.red,
-                                ),
-                              );
-                              return;
+                            final uid = credential.user?.uid;
+                            if (uid == null) {
+                              throw Exception('No se pudo obtener el UID.');
                             }
+
+                            final docSnapshot =
+                                await FirebaseFirestore.instance
+                                    .collection('usuarios')
+                                    .doc(uid)
+                                    .get();
+
+                            if (!docSnapshot.exists) {
+                              throw Exception(
+                                'Usuario no registrado en la base de datos.',
+                              );
+                            }
+
+                            final data = docSnapshot.data()!;
+                            final ciudadBD = data['ciudad'];
+                            final rolBD = data['id_role'];
+
+                            if (selectedCity != ciudadBD) {
+                              throw Exception(
+                                'Ciudad incorrecta.\nSeleccionaste $selectedCity, pero el usuario es de $ciudadBD.',
+                              );
+                            }
+
+                            if (rolBD != '3') {
+                              throw Exception(
+                                'No tienes permisos de acceso para este rol.',
+                              );
+                            }
+
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
                                 content: Text('¡Inicio de sesión exitoso!'),
                                 backgroundColor: Colors.green,
                               ),
                             );
-                            setState(() => _isLoading = false);
+
                             Navigator.pushReplacement(
                               context,
                               MaterialPageRoute(
                                 builder: (context) => const HomeScreen(),
                               ),
                             );
-                          } else {
-                            setState(() => _isLoading = false);
+                          } on FirebaseAuthException catch (e) {
+                            String errorMsg;
+                            switch (e.code) {
+                              case 'user-not-found':
+                                errorMsg = 'Usuario no encontrado.';
+                                break;
+                              case 'wrong-password':
+                                errorMsg = 'Contraseña incorrecta.';
+                                break;
+                              case 'invalid-email':
+                                errorMsg = 'Correo electrónico inválido.';
+                                break;
+                              default:
+                                errorMsg =
+                                    'Error al iniciar sesión: ${e.message}';
+                            }
+
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Credenciales incorrectas'),
+                              SnackBar(
+                                content: Text(errorMsg),
                                 backgroundColor: Colors.red,
                               ),
                             );
+                          } catch (e) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  e.toString().replaceFirst('Exception: ', ''),
+                                ),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                          } finally {
+                            setState(() => _isLoading = false);
                           }
                         },
                         label: Text(
