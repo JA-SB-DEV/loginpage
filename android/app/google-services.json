@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "302537303182",
+    "project_id": "heris-7963d",
+    "storage_bucket": "heris-7963d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:302537303182:android:065ab290da9631d73c15df",
+        "android_client_info": {
+          "package_name": "com.example.loginpage"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCcgl-ti7kNcnNhOD4UuuwtE8AyPLpNIgo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

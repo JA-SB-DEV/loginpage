@@ -1,4 +1,6 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:loginpage/firebase_options.dart';
 import 'Views/login.dart';
 import 'Widgets/dark_theme.dart';
 
@@ -64,8 +66,9 @@ final ThemeData darkTheme = ThemeData(
   visualDensity: VisualDensity.adaptivePlatformDensity,
 );
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(const MyApp());
 }
 
