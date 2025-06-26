@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:local_auth/local_auth.dart';
+import 'package:loginpage/Models/ciudad.dart';
 import 'package:loginpage/Widgets/BottonNavBar/home.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -17,7 +18,24 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
-  final List<String> cities = ['Valledupar', 'Santa Marta'];
+  List<Ciudad> ciudadesDisponibles = [];
+  Ciudad? ciudadSeleccionada;
+  bool cargandoCiudades = true;
+
+  @override
+  void initState() {
+    super.initState();
+    cargarCiudades();
+  }
+
+  Future<void> cargarCiudades() async {
+    final ciudades = await obtenerTodasCiudades();
+    setState(() {
+      ciudadesDisponibles = ciudades;
+      cargandoCiudades = false;
+    });
+  }
+
   bool _obscurePassword = true;
   bool _isLoading = false;
 
@@ -123,68 +141,54 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                     const SizedBox(height: 24),
-                    DropdownButtonFormField<String>(
-                      value: selectedCity,
-                      isExpanded: true,
-                      decoration: InputDecoration(
-                        prefixIcon: Icon(
-                          Icons.location_on,
-                          color: colorScheme.primary,
+                    cargandoCiudades
+                        ? Center(child: CircularProgressIndicator())
+                        : DropdownButtonFormField<Ciudad>(
+                          value: ciudadSeleccionada,
+                          isExpanded: true,
+                          decoration: InputDecoration(
+                            prefixIcon: Icon(
+                              Icons.location_on,
+                              color: colorScheme.primary,
+                            ),
+                            labelText: 'Ciudad',
+                            labelStyle: GoogleFonts.inter(
+                              color: colorScheme.onSurface,
+                              fontWeight: FontWeight.w500,
+                            ),
+                            hintText: 'Selecciona una ciudad',
+                            hintStyle: GoogleFonts.inter(
+                              color: colorScheme.onSurface.withOpacity(0.5),
+                            ),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              borderSide: BorderSide(
+                                color: colorScheme.primary,
+                              ),
+                            ),
+                            filled: true,
+                            fillColor: colorScheme.surfaceVariant.withOpacity(
+                              isDark ? 0.18 : 0.85,
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(
+                              vertical: 18,
+                              horizontal: 16,
+                            ),
+                          ),
+                          items:
+                              ciudadesDisponibles.map((ciudad) {
+                                return DropdownMenuItem<Ciudad>(
+                                  value: ciudad,
+                                  child: Text(ciudad.nombre),
+                                );
+                              }).toList(),
+                          onChanged: (Ciudad? newValue) {
+                            setState(() {
+                              ciudadSeleccionada = newValue;
+                              selectedCity = newValue?.nombre;
+                            });
+                          },
                         ),
-                        labelText: 'Ciudad',
-                        labelStyle: GoogleFonts.inter(
-                          color: colorScheme.onSurface,
-                          fontWeight: FontWeight.w500,
-                        ),
-                        hintText: 'Selecciona una ciudad',
-                        hintStyle: GoogleFonts.inter(
-                          color: colorScheme.onSurface.withOpacity(0.5),
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(16),
-                          borderSide: BorderSide(color: colorScheme.primary),
-                        ),
-                        filled: true,
-                        fillColor: colorScheme.surfaceVariant.withOpacity(
-                          isDark ? 0.18 : 0.85,
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(
-                          vertical: 18,
-                          horizontal: 16,
-                        ),
-                      ),
-                      items:
-                          cities
-                              .map(
-                                (city) => DropdownMenuItem(
-                                  value: city,
-                                  child: Row(
-                                    children: [
-                                      Icon(
-                                        Icons.apartment,
-                                        color: colorScheme.primary,
-                                        size: 20,
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Text(
-                                        city,
-                                        style: GoogleFonts.inter(
-                                          color: colorScheme.onSurface,
-                                          fontWeight: FontWeight.w500,
-                                          fontSize: 16,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              )
-                              .toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          selectedCity = value;
-                        });
-                      },
-                    ),
                     const SizedBox(height: 14),
                     TextField(
                       controller: _emailController,
@@ -298,19 +302,43 @@ class _LoginScreenState extends State<LoginScreen> {
 
                             final data = docSnapshot.data()!;
                             final ciudadBD = data['ciudad'];
-                            final rolBD = data['id_role'];
+                            // final rolID = data['id_role'];
 
-                            if (selectedCity != ciudadBD) {
+                            final ciudadDoc =
+                                await FirebaseFirestore.instance
+                                    .collection('ciudades')
+                                    .doc(ciudadBD)
+                                    .get();
+
+                            if (!ciudadDoc.exists) {
+                              throw Exception('Ciudad no existente.');
+                            }
+                            final ciudadData = ciudadDoc.data()!;
+                            final ciudadNombre = ciudadData['nombre'];
+
+                            if (selectedCity != ciudadNombre) {
                               throw Exception(
-                                'Ciudad incorrecta.\nSeleccionaste $selectedCity, pero el usuario es de $ciudadBD.',
+                                'Ciudad incorrecta.\nSeleccionaste $selectedCity, pero el usuario es de $ciudadNombre.',
                               );
                             }
 
-                            if (rolBD != '3') {
-                              throw Exception(
-                                'No tienes permisos de acceso para este rol.',
-                              );
-                            }
+                            // final rolDoc =
+                            //     await FirebaseFirestore.instance
+                            //         .collection('roles')
+                            //         .doc(rolID)
+                            //         .get();
+
+                            // if (!rolDoc.exists) {
+                            //   throw Exception('Rol no existente.');
+                            // }
+                            // final rolData = rolDoc.data()!;
+                            // final nivelRol = rolData['nivel'];
+
+                            // if (nivelRol != 1) {
+                            //   throw Exception(
+                            //     'Acceso denegado. Solo los superadministradores pueden iniciar sesión.',
+                            //   );
+                            // }
 
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
