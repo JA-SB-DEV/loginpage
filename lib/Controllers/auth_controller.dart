@@ -1,5 +1,4 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 
 class AuthController {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -42,15 +41,6 @@ class AuthController {
     } catch (e) {
       throw Exception('Error inesperado al registrar usuario: $e');
     }
-  }
-
-  // Guardar datos extra en Firestore
-  Future<void> saveUserData(User user, String ciudad) async {
-    await FirebaseFirestore.instance.collection('usuarios').doc(user.uid).set({
-      'email': user.email,
-      'ciudad': ciudad,
-      'fechaRegistro': FieldValue.serverTimestamp(),
-    }, SetOptions(merge: true));
   }
 
   // Cerrar sesión

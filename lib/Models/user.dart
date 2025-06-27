@@ -56,4 +56,24 @@ class User {
     final docRef = FirebaseFirestore.instance.collection('usuarios').doc(id);
     await docRef.set(toFirestore());
   }
+
+  Future<void> cargarUsuarioDesdeFirestore(String userId) async {
+    final docRef = FirebaseFirestore.instance
+        .collection('usuarios')
+        .doc(userId);
+    final docSnapshot = await docRef.get();
+    if (docSnapshot.exists) {
+      final data = docSnapshot.data() as Map<String, dynamic>;
+      id = docSnapshot.id;
+      name = data['nombre'];
+      email = data['email'];
+      phone = data['telefono'];
+      createdAt = data['fecha_registro'] as Timestamp?;
+      city = data['ciudad'];
+      sede = data['sede'];
+      idrole = data['id_role'];
+    } else {
+      throw Exception('Usuario no encontrado');
+    }
+  }
 }
