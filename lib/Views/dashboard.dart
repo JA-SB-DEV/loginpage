@@ -100,45 +100,41 @@ class DashboardScreen extends StatelessWidget {
           ),
         ),
       ),
-      floatingActionButton: SpeedDial(
-        icon: Icons.menu,
-        activeIcon: Icons.close,
-        backgroundColor: colorScheme.primary,
-        foregroundColor: Colors.white,
-        children: [
-          SpeedDialChild(
-            child: const Icon(Icons.add_box_outlined),
-            label: 'Nuevo producto',
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const AddProductScreen(),
-                ),
-              );
-            },
-          ),
-          SpeedDialChild(
-            child: const Icon(Icons.local_shipping),
-            label: 'Nuevo envío',
-            onTap: () {
-              // Acción para agregar envío
-            },
-          ),
-          SpeedDialChild(
-            child: const Icon(Icons.bar_chart_outlined),
-            label: 'Estadísticas',
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const StatisticsScreen(),
-                ),
-              );
-            },
-          ),
-        ],
-      ),
+      floatingActionButton:
+          user?.roleName == 'Superadministrador'
+              ? SpeedDial(
+                icon: Icons.menu,
+                activeIcon: Icons.close,
+                backgroundColor: colorScheme.primary,
+                foregroundColor: Colors.white,
+                children: [
+                  SpeedDialChild(
+                    child: const Icon(Icons.add_box_outlined),
+                    label: 'Nuevo producto',
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const AddProductScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                  SpeedDialChild(
+                    child: const Icon(Icons.bar_chart_outlined),
+                    label: 'Estadísticas',
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const StatisticsScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              )
+              : null,
     );
   }
 }
