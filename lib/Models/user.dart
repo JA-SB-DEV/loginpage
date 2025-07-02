@@ -9,7 +9,7 @@ class User {
   Timestamp? createdAt;
   String? idCity; // ID del documento de ciudad
   String? cityName; // Nombre de la ciudad, opcional
-  String? sede; // ID del documento de sede
+  String? idSede; // ID del documento de sede
   String? idRole; // ID del documento de rol
   String? roleName; // Nombre del rol, opcional
 
@@ -21,7 +21,7 @@ class User {
     this.createdAt,
     this.idCity,
     this.cityName,
-    this.sede,
+    this.idSede,
     this.idRole,
     this.roleName,
   });
@@ -42,7 +42,7 @@ class User {
       createdAt: data['fecha_registro'] as Timestamp?,
       idCity: data['ciudad'] ?? '',
       cityName: cityData['nombre'] ?? '',
-      sede: data['sede'] ?? '',
+      idSede: data['sede'] ?? '',
       idRole: data['id_role'] ?? '',
       roleName: roleData['nombre'] ?? '',
     );
@@ -55,7 +55,7 @@ class User {
       'telefono': phone,
       'fecha_registro': createdAt ?? FieldValue.serverTimestamp(),
       'ciudad': idCity,
-      'sede': sede,
+      'sede': idSede,
       'id_role': idRole,
     };
   }
@@ -82,7 +82,7 @@ class User {
       phone = data['telefono'];
       createdAt = data['fecha_registro'] as Timestamp?;
       idCity = data['ciudad'];
-      sede = data['sede'];
+      idSede = data['sede'];
       idRole = data['id_role'];
     } else {
       throw Exception('Usuario no encontrado');

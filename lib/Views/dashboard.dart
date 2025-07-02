@@ -23,7 +23,7 @@ class DashboardScreen extends StatelessWidget {
         elevation: 0,
         centerTitle: true,
         title: Text(
-          'Panel principal - ${user?.cityName ?? 'Usuario'}',
+          'Panel principal - ${user?.cityName ?? 'Ciudad desconocida'}',
           style: GoogleFonts.inter(
             color: colorScheme.primary,
             fontWeight: FontWeight.w600,
