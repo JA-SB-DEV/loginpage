@@ -1,6 +1,8 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:loginpage/Controllers/user_provider.dart';
 import 'package:loginpage/firebase_options.dart';
+import 'package:provider/provider.dart';
 import 'Views/login.dart';
 import 'Widgets/dark_theme.dart';
 
@@ -69,7 +71,7 @@ final ThemeData darkTheme = ThemeData(
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  runApp(const MyApp());
+  runApp(ChangeNotifierProvider(create: (_) => UserProvider(), child: MyApp()));
 }
 
 class MyApp extends StatelessWidget {

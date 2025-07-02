@@ -3,8 +3,11 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:local_auth/local_auth.dart';
+import 'package:loginpage/Controllers/user_provider.dart';
 import 'package:loginpage/Models/ciudad.dart';
 import 'package:loginpage/Widgets/BottonNavBar/home.dart';
+import 'package:loginpage/Models/user.dart' as model;
+import 'package:provider/provider.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -288,21 +291,21 @@ class _LoginScreenState extends State<LoginScreen> {
                               throw Exception('No se pudo obtener el UID.');
                             }
 
-                            final docSnapshot =
+                            final userDoc =
                                 await FirebaseFirestore.instance
                                     .collection('usuarios')
                                     .doc(uid)
                                     .get();
 
-                            if (!docSnapshot.exists) {
+                            if (!userDoc.exists) {
                               throw Exception(
                                 'Usuario no registrado en la base de datos.',
                               );
                             }
 
-                            final data = docSnapshot.data()!;
+                            final data = userDoc.data()!;
                             final ciudadBD = data['ciudad'];
-                            // final rolID = data['id_role'];
+                            final rolID = data['id_role'];
 
                             final ciudadDoc =
                                 await FirebaseFirestore.instance
@@ -321,24 +324,11 @@ class _LoginScreenState extends State<LoginScreen> {
                                 'Ciudad incorrecta.\nSeleccionaste $selectedCity, pero el usuario es de $ciudadNombre.',
                               );
                             }
-
-                            // final rolDoc =
-                            //     await FirebaseFirestore.instance
-                            //         .collection('roles')
-                            //         .doc(rolID)
-                            //         .get();
-
-                            // if (!rolDoc.exists) {
-                            //   throw Exception('Rol no existente.');
-                            // }
-                            // final rolData = rolDoc.data()!;
-                            // final nivelRol = rolData['nivel'];
-
-                            // if (nivelRol != 1) {
-                            //   throw Exception(
-                            //     'Acceso denegado. Solo los superadministradores pueden iniciar sesión.',
-                            //   );
-                            // }
+                            final roleDoc =
+                                await FirebaseFirestore.instance
+                                    .collection('roles')
+                                    .doc(rolID)
+                                    .get();
 
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
@@ -347,6 +337,15 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                             );
 
+                            final userData = model.User.fromFirestore(
+                              userDoc,
+                              roleDoc,
+                              ciudadDoc,
+                            );
+                            Provider.of<UserProvider>(
+                              context,
+                              listen: false,
+                            ).setUser(userData);
                             Navigator.pushReplacement(
                               context,
                               MaterialPageRoute(

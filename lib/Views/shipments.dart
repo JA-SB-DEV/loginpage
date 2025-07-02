@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:loginpage/Controllers/user_provider.dart';
+import 'package:provider/provider.dart';
 
 class ShipmentsScreen extends StatefulWidget {
   const ShipmentsScreen({super.key});
@@ -101,6 +103,7 @@ class _ShipmentsScreenState extends State<ShipmentsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final user = Provider.of<UserProvider>(context).user;
     final colorScheme = Theme.of(context).colorScheme;
     return Scaffold(
       backgroundColor: colorScheme.background,
@@ -118,13 +121,16 @@ class _ShipmentsScreenState extends State<ShipmentsScreen> {
           ),
         ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {},
-        icon: const Icon(Icons.local_shipping),
-        label: const Text('Nuevo envío'),
-        backgroundColor: colorScheme.primary,
-        foregroundColor: Colors.white,
-      ),
+      floatingActionButton:
+          user?.roleName != 'Superadministrador'
+              ? FloatingActionButton.extended(
+                onPressed: () {},
+                icon: const Icon(Icons.local_shipping),
+                label: const Text('Nuevo envío'),
+                backgroundColor: colorScheme.primary,
+                foregroundColor: Colors.white,
+              )
+              : null,
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(

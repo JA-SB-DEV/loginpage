@@ -7,9 +7,11 @@ class User {
   String? email;
   String? phone;
   Timestamp? createdAt;
-  String? city; // ID del documento de ciudad
+  String? idCity; // ID del documento de ciudad
+  String? cityName; // Nombre de la ciudad, opcional
   String? sede; // ID del documento de sede
-  String? idrole; // ID del documento de rol
+  String? idRole; // ID del documento de rol
+  String? roleName; // Nombre del rol, opcional
 
   User({
     this.id,
@@ -17,22 +19,32 @@ class User {
     this.email,
     this.phone,
     this.createdAt,
-    this.city,
+    this.idCity,
+    this.cityName,
     this.sede,
-    this.idrole,
+    this.idRole,
+    this.roleName,
   });
 
-  factory User.fromFirestore(DocumentSnapshot doc) {
-    final data = doc.data() as Map<String, dynamic>;
+  factory User.fromFirestore(
+    DocumentSnapshot userDoc,
+    DocumentSnapshot roleDoc,
+    DocumentSnapshot cityDoc,
+  ) {
+    final data = userDoc.data() as Map<String, dynamic>;
+    final roleData = roleDoc.data() as Map<String, dynamic>;
+    final cityData = cityDoc.data() as Map<String, dynamic>;
     return User(
-      id: doc.id,
+      id: userDoc.id,
       name: data['nombre'] ?? '',
       email: data['email'] ?? '',
       phone: data['telefono'] ?? '',
       createdAt: data['fecha_registro'] as Timestamp?,
-      city: data['ciudad'] ?? '',
+      idCity: data['ciudad'] ?? '',
+      cityName: cityData['nombre'] ?? '',
       sede: data['sede'] ?? '',
-      idrole: data['id_role'] ?? '',
+      idRole: data['id_role'] ?? '',
+      roleName: roleData['nombre'] ?? '',
     );
   }
 
@@ -42,9 +54,9 @@ class User {
       'email': email,
       'telefono': phone,
       'fecha_registro': createdAt ?? FieldValue.serverTimestamp(),
-      'ciudad': city,
+      'ciudad': idCity,
       'sede': sede,
-      'id_role': idrole,
+      'id_role': idRole,
     };
   }
 
@@ -69,9 +81,9 @@ class User {
       email = data['email'];
       phone = data['telefono'];
       createdAt = data['fecha_registro'] as Timestamp?;
-      city = data['ciudad'];
+      idCity = data['ciudad'];
       sede = data['sede'];
-      idrole = data['id_role'];
+      idRole = data['id_role'];
     } else {
       throw Exception('Usuario no encontrado');
     }
