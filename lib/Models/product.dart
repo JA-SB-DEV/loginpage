@@ -9,6 +9,7 @@ class Producto {
   double precio;
   String descripcion;
   String codigo;
+  int stock;
 
   Producto({
     this.id,
@@ -19,6 +20,7 @@ class Producto {
     required this.precio,
     required this.descripcion,
     required this.codigo,
+    required this.stock,
   });
 
   factory Producto.fromFirestore(DocumentSnapshot doc) {
@@ -32,6 +34,7 @@ class Producto {
       precio: (data['precio'] ?? 0.0).toDouble(),
       descripcion: data['descripcion'] ?? '',
       codigo: data['codigo'] ?? '',
+      stock: (data['stock'] ?? 0).toInt(),
     );
   }
 
@@ -44,10 +47,10 @@ class Producto {
       'precio': precio,
       'descripcion': descripcion,
       'codigo': codigo,
+      'stock': stock,
     };
   }
 
-  // Método para crear un nuevo producto en Firestore
   Future<void> crearProducto() async {
     if (id != null) throw Exception('El producto ya tiene un ID');
 
@@ -56,15 +59,13 @@ class Producto {
     await docRef.set(toFirestore());
   }
 
-  // Método para actualizar un producto existente
-  Future<void> actualizarProducto() async {
+  Future<void> actualizarStock(int nuevoStock) async {
     if (id == null) throw Exception('El producto no tiene un ID');
 
     final docRef = FirebaseFirestore.instance.collection('productos').doc(id);
-    await docRef.update(toFirestore());
+    await docRef.update({'stock': nuevoStock});
   }
 
-  // Método para cargar un producto desde Firestore
   static Future<Producto> cargarProducto(String productoId) async {
     final docRef = FirebaseFirestore.instance
         .collection('productos')
