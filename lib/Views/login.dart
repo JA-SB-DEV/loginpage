@@ -1,8 +1,13 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:local_auth/local_auth.dart';
-import 'package:loginpage/Models/user.dart';
-import '../Widgets/BottonNavBar/home.dart';
+import 'package:loginpage/Controllers/user_provider.dart';
+import 'package:loginpage/Models/ciudad.dart';
+import 'package:loginpage/Widgets/BottonNavBar/home.dart';
+import 'package:loginpage/Models/user.dart' as model;
+import 'package:provider/provider.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -16,15 +21,35 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
-  final List<String> cities = ['Valledupar', 'Santa Marta'];
+  List<Ciudad> ciudadesDisponibles = [];
+  Ciudad? ciudadSeleccionada;
+  bool cargandoCiudades = true;
+
+  @override
+  void initState() {
+    super.initState();
+    cargarCiudades();
+  }
+
+  Future<void> cargarCiudades() async {
+    final ciudades = await obtenerTodasCiudades();
+    setState(() {
+      ciudadesDisponibles = ciudades;
+      cargandoCiudades = false;
+    });
+  }
+
   bool _obscurePassword = true;
   bool _isLoading = false;
 
   Future<void> _authenticateWithBiometrics() async {
     if (selectedCity == null) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Selecciona una ciudad')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Selecciona una ciudad'),
+          backgroundColor: Colors.red,
+        ),
+      );
       return;
     }
     setState(() => _isLoading = true);
@@ -119,68 +144,54 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                     const SizedBox(height: 24),
-                    DropdownButtonFormField<String>(
-                      value: selectedCity,
-                      isExpanded: true,
-                      decoration: InputDecoration(
-                        prefixIcon: Icon(
-                          Icons.location_on,
-                          color: colorScheme.primary,
+                    cargandoCiudades
+                        ? Center(child: CircularProgressIndicator())
+                        : DropdownButtonFormField<Ciudad>(
+                          value: ciudadSeleccionada,
+                          isExpanded: true,
+                          decoration: InputDecoration(
+                            prefixIcon: Icon(
+                              Icons.location_on,
+                              color: colorScheme.primary,
+                            ),
+                            labelText: 'Ciudad',
+                            labelStyle: GoogleFonts.inter(
+                              color: colorScheme.onSurface,
+                              fontWeight: FontWeight.w500,
+                            ),
+                            hintText: 'Selecciona una ciudad',
+                            hintStyle: GoogleFonts.inter(
+                              color: colorScheme.onSurface.withOpacity(0.5),
+                            ),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              borderSide: BorderSide(
+                                color: colorScheme.primary,
+                              ),
+                            ),
+                            filled: true,
+                            fillColor: colorScheme.surfaceVariant.withOpacity(
+                              isDark ? 0.18 : 0.85,
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(
+                              vertical: 18,
+                              horizontal: 16,
+                            ),
+                          ),
+                          items:
+                              ciudadesDisponibles.map((ciudad) {
+                                return DropdownMenuItem<Ciudad>(
+                                  value: ciudad,
+                                  child: Text(ciudad.nombre),
+                                );
+                              }).toList(),
+                          onChanged: (Ciudad? newValue) {
+                            setState(() {
+                              ciudadSeleccionada = newValue;
+                              selectedCity = newValue?.nombre;
+                            });
+                          },
                         ),
-                        labelText: 'Ciudad',
-                        labelStyle: GoogleFonts.inter(
-                          color: colorScheme.onSurface,
-                          fontWeight: FontWeight.w500,
-                        ),
-                        hintText: 'Selecciona una ciudad',
-                        hintStyle: GoogleFonts.inter(
-                          color: colorScheme.onSurface.withOpacity(0.5),
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(16),
-                          borderSide: BorderSide(color: colorScheme.primary),
-                        ),
-                        filled: true,
-                        fillColor: colorScheme.surfaceVariant.withOpacity(
-                          isDark ? 0.18 : 0.85,
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(
-                          vertical: 18,
-                          horizontal: 16,
-                        ),
-                      ),
-                      items:
-                          cities
-                              .map(
-                                (city) => DropdownMenuItem(
-                                  value: city,
-                                  child: Row(
-                                    children: [
-                                      Icon(
-                                        Icons.apartment,
-                                        color: colorScheme.primary,
-                                        size: 20,
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Text(
-                                        city,
-                                        style: GoogleFonts.inter(
-                                          color: colorScheme.onSurface,
-                                          fontWeight: FontWeight.w500,
-                                          fontSize: 16,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              )
-                              .toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          selectedCity = value;
-                        });
-                      },
-                    ),
                     const SizedBox(height: 14),
                     TextField(
                       controller: _emailController,
@@ -193,7 +204,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         labelText: 'Correo electrónico',
                         labelStyle: GoogleFonts.inter(
-                          color: colorScheme.onSurface,
+                          color: colorScheme.onSurface.withOpacity(0.7),
                         ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -217,7 +228,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         labelText: 'Contraseña',
                         labelStyle: GoogleFonts.inter(
-                          color: colorScheme.onSurface,
+                          color: colorScheme.onSurface.withOpacity(0.7),
                         ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -260,61 +271,121 @@ class _LoginScreenState extends State<LoginScreen> {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
                                 content: Text('Selecciona una ciudad'),
+                                backgroundColor: Colors.red,
                               ),
                             );
                             return;
                           }
+
                           setState(() => _isLoading = true);
-                          var user = currentUser;
 
-                          await Future.delayed(
-                            const Duration(milliseconds: 600),
-                          ); // Simula carga
+                          try {
+                            final credential = await FirebaseAuth.instance
+                                .signInWithEmailAndPassword(
+                                  email: _emailController.text.trim(),
+                                  password: _passwordController.text.trim(),
+                                );
 
-                          if (_emailController.text == user.email &&
-                              _passwordController.text == user.token) {
-                            if (selectedCity != user.city) {
-                              setState(() => _isLoading = false);
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    'Ciudad incorrecta. Seleccionaste $selectedCity, pero el usuario es de ${user.city}.',
-                                  ),
-                                  backgroundColor: Colors.red,
-                                ),
-                              );
-                              return;
-                            } else if (user.idrole != '3') {
-                              setState(() => _isLoading = false);
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('No tienes permisos de acceso'),
-                                  backgroundColor: Colors.red,
-                                ),
-                              );
-                              return;
+                            final uid = credential.user?.uid;
+                            if (uid == null) {
+                              throw Exception('No se pudo obtener el UID.');
                             }
+
+                            final userDoc =
+                                await FirebaseFirestore.instance
+                                    .collection('usuarios')
+                                    .doc(uid)
+                                    .get();
+
+                            if (!userDoc.exists) {
+                              throw Exception(
+                                'Usuario no registrado en la base de datos.',
+                              );
+                            }
+
+                            final data = userDoc.data()!;
+                            final ciudadBD = data['ciudad'];
+                            final rolID = data['id_role'];
+
+                            final ciudadDoc =
+                                await FirebaseFirestore.instance
+                                    .collection('ciudades')
+                                    .doc(ciudadBD)
+                                    .get();
+
+                            if (!ciudadDoc.exists) {
+                              throw Exception('Ciudad no existente.');
+                            }
+                            final ciudadData = ciudadDoc.data()!;
+                            final ciudadNombre = ciudadData['nombre'];
+
+                            if (selectedCity != ciudadNombre) {
+                              throw Exception(
+                                'Ciudad incorrecta.\nSeleccionaste $selectedCity, pero el usuario es de $ciudadNombre.',
+                              );
+                            }
+                            final roleDoc =
+                                await FirebaseFirestore.instance
+                                    .collection('roles')
+                                    .doc(rolID)
+                                    .get();
+
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
                                 content: Text('¡Inicio de sesión exitoso!'),
                                 backgroundColor: Colors.green,
                               ),
                             );
-                            setState(() => _isLoading = false);
+
+                            final userData = model.User.fromFirestore(
+                              userDoc,
+                              roleDoc,
+                              ciudadDoc,
+                            );
+                            Provider.of<UserProvider>(
+                              context,
+                              listen: false,
+                            ).setUser(userData);
                             Navigator.pushReplacement(
                               context,
                               MaterialPageRoute(
                                 builder: (context) => const HomeScreen(),
                               ),
                             );
-                          } else {
-                            setState(() => _isLoading = false);
+                          } on FirebaseAuthException catch (e) {
+                            String errorMsg;
+                            switch (e.code) {
+                              case 'user-not-found':
+                                errorMsg = 'Usuario no encontrado.';
+                                break;
+                              case 'wrong-password':
+                                errorMsg = 'Contraseña incorrecta.';
+                                break;
+                              case 'invalid-email':
+                                errorMsg = 'Correo electrónico inválido.';
+                                break;
+                              default:
+                                errorMsg =
+                                    'Error al iniciar sesión: ${e.message}';
+                            }
+
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Credenciales incorrectas'),
+                              SnackBar(
+                                content: Text(errorMsg),
                                 backgroundColor: Colors.red,
                               ),
                             );
+                          } catch (e) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  e.toString().replaceFirst('Exception: ', ''),
+                                ),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                          } finally {
+                            setState(() => _isLoading = false);
                           }
                         },
                         label: Text(

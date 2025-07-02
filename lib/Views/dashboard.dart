@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
+import 'package:loginpage/Controllers/user_provider.dart';
 import 'package:loginpage/Views/statistics.dart';
 import 'package:loginpage/Views/add_product_screen.dart';
+import 'package:provider/provider.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final user = Provider.of<UserProvider>(context).user;
     final colorScheme = Theme.of(context).colorScheme;
     final width = MediaQuery.of(context).size.width;
     final isDesktop = width > 900;
@@ -20,7 +23,7 @@ class DashboardScreen extends StatelessWidget {
         elevation: 0,
         centerTitle: true,
         title: Text(
-          'Panel principal',
+          'Panel principal - ${user?.cityName ?? 'Ciudad desconocida'}',
           style: GoogleFonts.inter(
             color: colorScheme.primary,
             fontWeight: FontWeight.w600,
@@ -97,45 +100,41 @@ class DashboardScreen extends StatelessWidget {
           ),
         ),
       ),
-      floatingActionButton: SpeedDial(
-        icon: Icons.menu,
-        activeIcon: Icons.close,
-        backgroundColor: colorScheme.primary,
-        foregroundColor: Colors.white,
-        children: [
-          SpeedDialChild(
-            child: const Icon(Icons.add_box_outlined),
-            label: 'Nuevo producto',
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const AddProductScreen(),
-                ),
-              );
-            },
-          ),
-          SpeedDialChild(
-            child: const Icon(Icons.local_shipping),
-            label: 'Nuevo envío',
-            onTap: () {
-              // Acción para agregar envío
-            },
-          ),
-          SpeedDialChild(
-            child: const Icon(Icons.bar_chart_outlined),
-            label: 'Estadísticas',
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const StatisticsScreen(),
-                ),
-              );
-            },
-          ),
-        ],
-      ),
+      floatingActionButton:
+          user?.roleName == 'Superadministrador'
+              ? SpeedDial(
+                icon: Icons.menu,
+                activeIcon: Icons.close,
+                backgroundColor: colorScheme.primary,
+                foregroundColor: Colors.white,
+                children: [
+                  SpeedDialChild(
+                    child: const Icon(Icons.add_box_outlined),
+                    label: 'Nuevo producto',
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const AddProductScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                  SpeedDialChild(
+                    child: const Icon(Icons.bar_chart_outlined),
+                    label: 'Estadísticas',
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const StatisticsScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              )
+              : null,
     );
   }
 }
