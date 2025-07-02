@@ -14,6 +14,7 @@ class ProductoController {
     required String descripcion,
     required String codigo,
     required int stock,
+    required bool esComprado,
   }) async {
     final nuevoProducto = Producto(
       nombre: nombre,
@@ -24,6 +25,7 @@ class ProductoController {
       descripcion: descripcion,
       codigo: codigo,
       stock: stock,
+      esComprado: esComprado,
     );
 
     return await _productoService.crearProducto(nuevoProducto);
