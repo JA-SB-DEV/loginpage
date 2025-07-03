@@ -15,6 +15,51 @@ class UserService {
     }
   }
 
+<<<<<<< HEAD
+=======
+  Future<List<User>> listaUsuariosDeMiCiudadConRol(String idCity) async {
+    try {
+      final querySnapshot =
+          await _firestore
+              .collection('usuarios')
+              .where('ciudad', isEqualTo: idCity)
+              .get();
+
+      if (querySnapshot.docs.isEmpty) return [];
+
+      // Obtener la ciudad solo una vez
+      final cityDoc = await _firestore.collection('ciudades').doc(idCity).get();
+
+      // Obtener los roles únicos de los usuarios
+      final roleIds =
+          querySnapshot.docs
+              .map((doc) => doc.data()['id_role'] as String? ?? '')
+              .toSet()
+              .where((id) => id.isNotEmpty)
+              .toList();
+
+      Map<String, DocumentSnapshot> rolesMap = {};
+      if (roleIds.isNotEmpty) {
+        final rolesQuery =
+            await _firestore
+                .collection('roles')
+                .where(FieldPath.documentId, whereIn: roleIds)
+                .get();
+        rolesMap = {for (var doc in rolesQuery.docs) doc.id: doc};
+      }
+
+      // Construir la lista de usuarios con datos de rol y ciudad
+      return querySnapshot.docs.map((userDoc) {
+        final roleId = userDoc.data()['id_role'] as String? ?? '';
+        final roleDoc = rolesMap[roleId];
+        return User.fromFirestore2(userDoc, roleDoc, cityDoc);
+      }).toList();
+    } catch (e) {
+      throw Exception('Error al obtener usuarios: $e');
+    }
+  }
+
+>>>>>>> 6ee8cf19aadfbc59a17f3e77f0bf2abe8ab9e445
   Future<User> obtenerUsuarioPorID(String userId) async {
     try {
       final userDoc = await _firestore.collection('usuarios').doc(userId).get();
@@ -29,7 +74,11 @@ class UserService {
               .doc(userDoc.data()?['ciudad'])
               .get();
       if (userDoc.exists) {
+<<<<<<< HEAD
         return User.fromFirestore(userDoc, roleDoc, cityDoc);
+=======
+        return User.fromFirestore2(userDoc, roleDoc, cityDoc);
+>>>>>>> 6ee8cf19aadfbc59a17f3e77f0bf2abe8ab9e445
       }
       throw Exception('Usuario no encontrado');
     } catch (e) {

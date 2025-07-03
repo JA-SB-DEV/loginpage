@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:loginpage/Controllers/user_controller.dart';
+import 'package:loginpage/Controllers/user_provider.dart';
+import 'package:loginpage/Models/user.dart' as model;
+import 'package:provider/provider.dart';
 
 class ManageUsersScreen extends StatefulWidget {
   const ManageUsersScreen({super.key});
@@ -9,25 +13,34 @@ class ManageUsersScreen extends StatefulWidget {
 }
 
 class _ManageUsersScreenState extends State<ManageUsersScreen> {
-  // Simulación de usuarios
-  List<Map<String, dynamic>> users = [
-    {
-      'nombre': 'Juan Pérez',
-      'correo': 'juan@ejemplo.com',
-      'permisos': {'inventario': true, 'envios': false},
-    },
-    {
-      'nombre': 'Ana López',
-      'correo': 'ana@ejemplo.com',
-      'permisos': {'inventario': true, 'envios': true},
-    },
-  ];
+  List<model.User> usuarios = [];
+  bool cargando = true;
 
-  void _showUserForm({Map<String, dynamic>? user, int? index}) {
-    final nombreController = TextEditingController(text: user?['nombre'] ?? '');
-    final correoController = TextEditingController(text: user?['correo'] ?? '');
-    bool inventario = user?['permisos']?['inventario'] ?? false;
-    bool envios = user?['permisos']?['envios'] ?? false;
+  @override
+  void initState() {
+    super.initState();
+    _cargarUsuarios();
+  }
+
+  Future<void> _cargarUsuarios() async {
+    setState(() => cargando = true);
+    final userController = UserController();
+    // Obtener el idCity del usuario actual desde el UserProvider
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final idCity = userProvider.user?.idCity ?? '';
+    final lista = await userController.obtenerUsuariosDeCiudadConRol(idCity);
+    setState(() {
+      usuarios = lista;
+      cargando = false;
+    });
+  }
+
+  void _showUserForm({model.User? user, int? index}) {
+    final nombreController = TextEditingController(text: user?.name ?? '');
+    final correoController = TextEditingController(text: user?.email ?? '');
+    // Suponiendo que tienes campos de permisos en tu modelo
+    // bool inventario = user?.permisos?.inventario ?? false;
+    // bool envios = user?.permisos?.envios ?? false;
 
     showDialog(
       context: context,
@@ -64,18 +77,18 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  if (user != null) ...[
-                    SwitchListTile(
-                      title: const Text('Permiso Inventario'),
-                      value: inventario,
-                      onChanged: (val) => setState(() => inventario = val),
-                    ),
-                    SwitchListTile(
-                      title: const Text('Permiso Envíos'),
-                      value: envios,
-                      onChanged: (val) => setState(() => envios = val),
-                    ),
-                  ],
+                  // if (user != null) ...[
+                  //   SwitchListTile(
+                  //     title: const Text('Permiso Inventario'),
+                  //     value: inventario,
+                  //     onChanged: (val) => setState(() => inventario = val),
+                  //   ),
+                  //   SwitchListTile(
+                  //     title: const Text('Permiso Envíos'),
+                  //     value: envios,
+                  //     onChanged: (val) => setState(() => envios = val),
+                  //   ),
+                  // ],
                 ],
               ),
             ),
@@ -95,25 +108,27 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
                   );
                   return;
                 }
+                // Aquí deberías implementar la lógica para crear o editar usuarios usando tu UserController
+                // Por simplicidad, solo actualizamos la lista local
                 if (user == null) {
-                  // Al crear, los permisos por defecto pueden ser false
-                  final nuevoUsuario = {
-                    'nombre': nombreController.text,
-                    'correo': correoController.text,
-                    'permisos': {'inventario': false, 'envios': false},
-                  };
+                  // Crear usuario (esto debería hacerse con UserController y recargar la lista)
+                  final nuevoUsuario = model.User(
+                    name: nombreController.text,
+                    email: correoController.text,
+                    // Completa los demás campos requeridos por tu modelo
+                  );
                   setState(() {
-                    users.add(nuevoUsuario);
+                    usuarios.add(nuevoUsuario);
                   });
                 } else if (index != null) {
-                  // Al editar, guarda los permisos
-                  final usuarioEditado = {
-                    'nombre': nombreController.text,
-                    'correo': correoController.text,
-                    'permisos': {'inventario': inventario, 'envios': envios},
-                  };
+                  // Editar usuario (esto debería hacerse con UserController y recargar la lista)
+                  final usuarioEditado = model.User(
+                    name: nombreController.text,
+                    email: correoController.text,
+                    // Completa los demás campos requeridos por tu modelo
+                  );
                   setState(() {
-                    users[index] = usuarioEditado;
+                    usuarios[index] = usuarioEditado;
                   });
                 }
                 Navigator.pop(context);
@@ -152,7 +167,9 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
         ],
       ),
       body:
-          users.isEmpty
+          cargando
+              ? const Center(child: CircularProgressIndicator())
+              : usuarios.isEmpty
               ? Center(
                 child: Text(
                   'No hay usuarios registrados.',
@@ -164,10 +181,10 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
               )
               : ListView.separated(
                 padding: const EdgeInsets.all(16),
-                itemCount: users.length,
+                itemCount: usuarios.length,
                 separatorBuilder: (_, __) => const SizedBox(height: 12),
                 itemBuilder: (context, index) {
-                  final user = users[index];
+                  final user = usuarios[index];
                   return Card(
                     color: colorScheme.surface,
                     shape: RoundedRectangleBorder(
@@ -175,18 +192,20 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
                     ),
                     child: ListTile(
                       title: Text(
-                        user['nombre'],
+                        user.name ?? '-',
                         style: GoogleFonts.inter(fontWeight: FontWeight.w600),
                       ),
                       subtitle: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(user['correo']),
+                          Text(user.email ?? '-'),
                           const SizedBox(height: 4),
                           Text(
-                            'Permisos: '
-                            '${user['permisos']['inventario'] ? 'Inventario ' : ''}'
-                            '${user['permisos']['envios'] ? 'Envíos' : ''}',
+                            'Ciudad: ${user.cityName ?? "-"}',
+                            style: GoogleFonts.inter(fontSize: 13),
+                          ),
+                          Text(
+                            'Rol: ${user.roleName ?? "-"}',
                             style: GoogleFonts.inter(fontSize: 13),
                           ),
                         ],
@@ -222,7 +241,7 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
                                           child: const Text('Eliminar'),
                                           onPressed: () {
                                             setState(() {
-                                              users.removeAt(index);
+                                              usuarios.removeAt(index);
                                             });
                                             Navigator.pop(context);
                                           },

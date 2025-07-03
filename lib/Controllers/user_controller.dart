@@ -27,6 +27,13 @@ class UserController {
     return await _userService.crearUsuario(nuevoUsuario);
   }
 
+<<<<<<< HEAD
+=======
+  Future<List<User>> obtenerUsuariosDeCiudadConRol(String idCity) async {
+    return await _userService.listaUsuariosDeMiCiudadConRol(idCity);
+  }
+
+>>>>>>> 6ee8cf19aadfbc59a17f3e77f0bf2abe8ab9e445
   Future<User?> obtenerUsuarioPorID(String email) async {
     return await _userService.obtenerUsuarioPorID(email);
   }
