@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 class User {
   String? id;
@@ -28,12 +29,31 @@ class User {
 
   factory User.fromFirestore(
     DocumentSnapshot userDoc,
-    DocumentSnapshot roleDoc,
     DocumentSnapshot cityDoc,
   ) {
     final data = userDoc.data() as Map<String, dynamic>;
-    final roleData = roleDoc.data() as Map<String, dynamic>;
     final cityData = cityDoc.data() as Map<String, dynamic>;
+    return User(
+      id: userDoc.id,
+      name: data['nombre'] ?? '',
+      email: data['email'] ?? '',
+      phone: data['telefono'] ?? '',
+      createdAt: data['fecha_registro'] as Timestamp?,
+      idCity: data['ciudad'] ?? '',
+      cityName: cityData['nombre'] ?? '',
+      idSede: data['sede'] ?? '',
+      idRole: data['id_role'] ?? '',
+    );
+  }
+
+  factory User.fromFirestore2(
+    DocumentSnapshot userDoc,
+    DocumentSnapshot? roleDoc,
+    DocumentSnapshot? cityDoc,
+  ) {
+    final data = userDoc.data() as Map<String, dynamic>;
+    final roleData = roleDoc?.data() as Map<String, dynamic>;
+    final cityData = cityDoc?.data() as Map<String, dynamic>;
     return User(
       id: userDoc.id,
       name: data['nombre'] ?? '',
