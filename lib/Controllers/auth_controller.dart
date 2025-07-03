@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class AuthController {
@@ -31,11 +32,35 @@ class AuthController {
   }
 
   // Método para registrar un nuevo usuario
-  Future<User?> registerWithEmail(String email, String password) async {
+  Future<User?> registerWithEmail({
+    required String email,
+    required String password,
+    required String nombre,
+    required String telefono,
+    required String idCiudad,
+    required String idSede,
+    required String idRole,
+  }) async {
     try {
       UserCredential userCredential = await _auth
           .createUserWithEmailAndPassword(email: email, password: password);
-      return userCredential.user;
+
+      User? user = userCredential.user;
+      if (user != null) {
+        await FirebaseFirestore.instance
+            .collection('usuarios')
+            .doc(user.uid)
+            .set({
+              'nombre': nombre,
+              'email': email,
+              'telefono': telefono,
+              'ciudad': idCiudad,
+              'sede': idSede,
+              'id_role': idRole,
+              'fecha_registro': FieldValue.serverTimestamp(),
+            });
+      }
+      return user;
     } on FirebaseAuthException catch (e) {
       throw Exception('Error al registrar usuario: ${e.message}');
     } catch (e) {

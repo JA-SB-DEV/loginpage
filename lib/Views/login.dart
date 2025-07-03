@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:local_auth/local_auth.dart';
+import 'package:loginpage/Controllers/auth_controller.dart';
 import 'package:loginpage/Controllers/user_provider.dart';
 import 'package:loginpage/Models/ciudad.dart';
 import 'package:loginpage/Widgets/BottonNavBar/home.dart';
@@ -20,6 +21,7 @@ class _LoginScreenState extends State<LoginScreen> {
   String? selectedCity;
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final AuthController auth = AuthController();
 
   List<Ciudad> ciudadesDisponibles = [];
   Ciudad? ciudadSeleccionada;
@@ -280,13 +282,12 @@ class _LoginScreenState extends State<LoginScreen> {
                           setState(() => _isLoading = true);
 
                           try {
-                            final credential = await FirebaseAuth.instance
-                                .signInWithEmailAndPassword(
-                                  email: _emailController.text.trim(),
-                                  password: _passwordController.text.trim(),
-                                );
+                            final credential = await auth.signInWithEmail(
+                              _emailController.text.trim(),
+                              _passwordController.text.trim(),
+                            );
 
-                            final uid = credential.user?.uid;
+                            final uid = credential?.uid;
                             if (uid == null) {
                               throw Exception('No se pudo obtener el UID.');
                             }
