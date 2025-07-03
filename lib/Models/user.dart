@@ -28,17 +28,9 @@ class User {
 
   factory User.fromFirestore(
     DocumentSnapshot userDoc,
-<<<<<<< HEAD
-    DocumentSnapshot roleDoc,
     DocumentSnapshot cityDoc,
   ) {
     final data = userDoc.data() as Map<String, dynamic>;
-    final roleData = roleDoc.data() as Map<String, dynamic>;
-=======
-    DocumentSnapshot cityDoc,
-  ) {
-    final data = userDoc.data() as Map<String, dynamic>;
->>>>>>> 6ee8cf19aadfbc59a17f3e77f0bf2abe8ab9e445
     final cityData = cityDoc.data() as Map<String, dynamic>;
     return User(
       id: userDoc.id,
@@ -50,12 +42,6 @@ class User {
       cityName: cityData['nombre'] ?? '',
       idSede: data['sede'] ?? '',
       idRole: data['id_role'] ?? '',
-<<<<<<< HEAD
-      roleName: roleData['nombre'] ?? '',
-    );
-  }
-
-=======
     );
   }
 
@@ -81,7 +67,6 @@ class User {
     );
   }
 
->>>>>>> 6ee8cf19aadfbc59a17f3e77f0bf2abe8ab9e445
   Map<String, dynamic> toFirestore() {
     return {
       'nombre': name,

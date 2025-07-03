@@ -15,8 +15,6 @@ class UserService {
     }
   }
 
-<<<<<<< HEAD
-=======
   Future<List<User>> listaUsuariosDeMiCiudadConRol(String idCity) async {
     try {
       final querySnapshot =
@@ -59,7 +57,6 @@ class UserService {
     }
   }
 
->>>>>>> 6ee8cf19aadfbc59a17f3e77f0bf2abe8ab9e445
   Future<User> obtenerUsuarioPorID(String userId) async {
     try {
       final userDoc = await _firestore.collection('usuarios').doc(userId).get();
@@ -74,11 +71,7 @@ class UserService {
               .doc(userDoc.data()?['ciudad'])
               .get();
       if (userDoc.exists) {
-<<<<<<< HEAD
-        return User.fromFirestore(userDoc, roleDoc, cityDoc);
-=======
         return User.fromFirestore2(userDoc, roleDoc, cityDoc);
->>>>>>> 6ee8cf19aadfbc59a17f3e77f0bf2abe8ab9e445
       }
       throw Exception('Usuario no encontrado');
     } catch (e) {

@@ -337,11 +337,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                             );
 
-<<<<<<< HEAD
-                            final userData = model.User.fromFirestore(
-=======
                             final userData = model.User.fromFirestore2(
->>>>>>> 6ee8cf19aadfbc59a17f3e77f0bf2abe8ab9e445
                               userDoc,
                               roleDoc,
                               ciudadDoc,
