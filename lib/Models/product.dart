@@ -10,6 +10,7 @@ class Producto {
   String descripcion;
   String codigo;
   int stock;
+  bool esComprado;
 
   Producto({
     this.id,
@@ -21,6 +22,7 @@ class Producto {
     required this.descripcion,
     required this.codigo,
     required this.stock,
+    required this.esComprado,
   });
 
   factory Producto.fromFirestore(DocumentSnapshot doc) {
@@ -35,6 +37,7 @@ class Producto {
       descripcion: data['descripcion'] ?? '',
       codigo: data['codigo'] ?? '',
       stock: (data['stock'] ?? 0).toInt(),
+      esComprado: data['es_comprado'] ?? true,
     );
   }
 
@@ -48,6 +51,7 @@ class Producto {
       'descripcion': descripcion,
       'codigo': codigo,
       'stock': stock,
+      'es_comprado': esComprado,
     };
   }
 
