@@ -21,7 +21,6 @@ class SedeService {
               .doc();
       sede.id = docRef.id;
       await docRef.set(sede.toFirestore());
-      // print('Sede creada con ID: ${sede.id}');
       return docRef.id;
     } catch (e) {
       throw Exception('Error al crear sede: $e');

@@ -84,7 +84,6 @@ class _ManageBranchesScreenState extends State<ManageBranchesScreen> {
                       listen: false,
                     ).user?.idCity ??
                     '';
-                // print('City ID: $cityId');
                 try {
                   await _sedeController.crearSede(
                     cityId: cityId,
