@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:loginpage/Controllers/sede_controller.dart';
+import 'package:loginpage/Controllers/user_provider.dart';
+import 'package:loginpage/Models/sede.dart' as model;
+import 'package:provider/provider.dart';
 
 class ManageBranchesScreen extends StatefulWidget {
   const ManageBranchesScreen({super.key});
@@ -9,10 +13,34 @@ class ManageBranchesScreen extends StatefulWidget {
 }
 
 class _ManageBranchesScreenState extends State<ManageBranchesScreen> {
-  List<String> branches = ['Sede Principal', 'Sede Norte'];
+  final SedeController _sedeController = SedeController();
+  List<model.Sede> branches = [];
+  bool isLoading = true;
 
-  void _showBranchForm({String? branch, int? index}) {
-    final controller = TextEditingController(text: branch ?? '');
+  @override
+  void initState() {
+    super.initState();
+    _loadBranches();
+  }
+
+  Future<void> _loadBranches() async {
+    setState(() {
+      isLoading = true;
+    });
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final user = userProvider.user;
+    final idCity = user?.idCity ?? '';
+    branches = await _sedeController.obtenerSedes(idCity);
+    if (user != null) {
+      branches = branches.where((branch) => branch.activa).toList();
+    }
+    setState(() {
+      isLoading = false;
+    });
+  }
+
+  void _showBranchForm({model.Sede? branch, int? index}) {
+    final controller = TextEditingController(text: branch?.name ?? '');
     showDialog(
       context: context,
       builder: (context) {
@@ -40,23 +68,38 @@ class _ManageBranchesScreenState extends State<ManageBranchesScreen> {
             ),
             ElevatedButton(
               child: Text(branch == null ? 'Crear' : 'Guardar'),
-              onPressed: () {
+              onPressed: () async {
                 if (controller.text.trim().isEmpty) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
                       content: Text('El nombre no puede estar vacío'),
+                      backgroundColor: Colors.red,
                     ),
                   );
                   return;
                 }
-                setState(() {
-                  if (branch == null) {
-                    branches.add(controller.text.trim());
-                  } else if (index != null) {
-                    branches[index] = controller.text.trim();
-                  }
-                });
-                Navigator.pop(context);
+                final cityId =
+                    Provider.of<UserProvider>(
+                      context,
+                      listen: false,
+                    ).user?.idCity ??
+                    '';
+                // print('City ID: $cityId');
+                try {
+                  await _sedeController.crearSede(
+                    cityId: cityId,
+                    nombre: controller.text.trim(),
+                  );
+                  await _loadBranches();
+                  Navigator.pop(context);
+                } catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Error: $e'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
               },
             ),
           ],
@@ -92,7 +135,9 @@ class _ManageBranchesScreenState extends State<ManageBranchesScreen> {
         ],
       ),
       body:
-          branches.isEmpty
+          isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : branches.isEmpty
               ? Center(
                 child: Text(
                   'No hay sedes registradas.',
@@ -115,7 +160,7 @@ class _ManageBranchesScreenState extends State<ManageBranchesScreen> {
                     ),
                     child: ListTile(
                       title: Text(
-                        branch,
+                        branch.name,
                         style: GoogleFonts.inter(fontWeight: FontWeight.w600),
                       ),
                       trailing: Row(
