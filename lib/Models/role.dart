@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-class Rol {
+class Role {
   final String id;
   final String nombre;
   final int nivel;
@@ -8,7 +8,7 @@ class Rol {
   // final List<String> permisos;
   // final bool activo;
 
-  Rol({
+  Role({
     required this.id,
     required this.nombre,
     required this.nivel,
@@ -17,9 +17,9 @@ class Rol {
     // required this.activo,
   });
 
-  factory Rol.fromFirestore(DocumentSnapshot doc) {
+  factory Role.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
-    return Rol(
+    return Role(
       id: doc.id,
       nombre: data['nombre'] ?? '',
       nivel: data['nivel'] ?? 0,

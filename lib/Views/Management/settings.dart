@@ -2,15 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:loginpage/Controllers/dark_theme_controller.dart';
+import 'package:loginpage/Controllers/user_provider.dart';
+import 'package:loginpage/Views/Management/manage_cities.dart';
 import '../login.dart';
 import 'manage_branches.dart';
 import 'manage_users.dart';
-// import '../../Widgets/dark_theme.dart';
+import 'package:provider/provider.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
-
-  final bool isSuperAdmin = true;
 
   Future<void> _authenticate(BuildContext context) async {
     final LocalAuthentication auth = LocalAuthentication();
@@ -45,6 +45,9 @@ class SettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final userProvider = Provider.of<UserProvider>(context);
+    final user = userProvider.user;
+    final bool isSuperAdmin = user?.roleName == 'Superadministrador';
 
     return Scaffold(
       backgroundColor: colorScheme.background,
@@ -111,7 +114,27 @@ class SettingsScreen extends StatelessWidget {
               ),
               child: Column(
                 children: [
-                  if (isSuperAdmin)
+                  if (isSuperAdmin) ...[
+                    ListTile(
+                      leading: Icon(
+                        Icons.apartment_rounded,
+                        color: colorScheme.primary,
+                      ),
+                      title: Text(
+                        'Gestionar ciudades',
+                        style: GoogleFonts.inter(fontWeight: FontWeight.w600),
+                      ),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const ManageCitiesScreen(),
+                          ),
+                        );
+                      },
+                    ),
+                    Divider(height: 0, indent: 16, endIndent: 16),
                     ListTile(
                       leading: Icon(
                         Icons.location_city_outlined,
@@ -131,9 +154,7 @@ class SettingsScreen extends StatelessWidget {
                         );
                       },
                     ),
-                  if (isSuperAdmin)
                     Divider(height: 0, indent: 16, endIndent: 16),
-                  if (isSuperAdmin)
                     ListTile(
                       leading: Icon(
                         Icons.group_outlined,
@@ -153,7 +174,8 @@ class SettingsScreen extends StatelessWidget {
                         );
                       },
                     ),
-                  Divider(height: 0, indent: 16, endIndent: 16),
+                    Divider(height: 0, indent: 16, endIndent: 16),
+                  ],
                   ListTile(
                     leading: Icon(
                       Icons.fingerprint,

@@ -2,8 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:loginpage/Controllers/user_controller.dart';
 import 'package:loginpage/Controllers/user_provider.dart';
+import 'package:loginpage/Models/city.dart';
+import 'package:loginpage/Models/role.dart';
+import 'package:loginpage/Models/sede.dart';
 import 'package:loginpage/Models/user.dart' as model;
 import 'package:provider/provider.dart';
+import 'package:loginpage/Controllers/city_controller.dart';
+import 'package:loginpage/Controllers/role_controller.dart';
+import 'package:loginpage/Controllers/sede_controller.dart';
 
 class ManageUsersScreen extends StatefulWidget {
   const ManageUsersScreen({super.key});
@@ -16,10 +22,15 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
   List<model.User> usuarios = [];
   bool cargando = true;
 
+  List<City> ciudades = [];
+  List<Role> roles = [];
+  List<Sede> sedes = [];
+
   @override
   void initState() {
     super.initState();
     _cargarUsuarios();
+    _cargarDatosFormulario();
   }
 
   Future<void> _cargarUsuarios() async {
@@ -35,12 +46,33 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
     });
   }
 
-  void _showUserForm({model.User? user, int? index}) {
+  Future<void> _cargarDatosFormulario() async {
+    setState(() => cargando = true);
+    final cityController = CityController();
+    final roleController = RoleController();
+    final sedeController = SedeController();
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final idCity = userProvider.user?.idCity ?? '';
+
+    ciudades = await cityController.obtenerCiudades();
+    roles = await roleController.obtenerRolesSinAdmin();
+    sedes = await sedeController.obtenerSedes(idCity);
+    setState(() {
+      cargando = false;
+    });
+  }
+
+  void _showUserForm({model.User? user, int? index}) async {
+    await _cargarDatosFormulario();
+
     final nombreController = TextEditingController(text: user?.name ?? '');
     final correoController = TextEditingController(text: user?.email ?? '');
-    // Suponiendo que tienes campos de permisos en tu modelo
-    // bool inventario = user?.permisos?.inventario ?? false;
-    // bool envios = user?.permisos?.envios ?? false;
+    String? selectedCity =
+        user?.idCity ?? (ciudades.isNotEmpty ? ciudades.first.id : null);
+    String? selectedRole =
+        user?.idRole ?? (roles.isNotEmpty ? roles.first.id : null);
+    String? selectedSede =
+        user?.idSede ?? (sedes.isNotEmpty ? sedes.first.id : null);
 
     showDialog(
       context: context,
@@ -56,41 +88,64 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
             style: GoogleFonts.inter(fontWeight: FontWeight.w600),
           ),
           content: SingleChildScrollView(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 350),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  TextField(
-                    controller: nombreController,
-                    decoration: InputDecoration(
-                      labelText: 'Nombre',
-                      border: const OutlineInputBorder(),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  TextField(
-                    controller: correoController,
-                    decoration: InputDecoration(
-                      labelText: 'Correo',
-                      border: const OutlineInputBorder(),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  // if (user != null) ...[
-                  //   SwitchListTile(
-                  //     title: const Text('Permiso Inventario'),
-                  //     value: inventario,
-                  //     onChanged: (val) => setState(() => inventario = val),
-                  //   ),
-                  //   SwitchListTile(
-                  //     title: const Text('Permiso Envíos'),
-                  //     value: envios,
-                  //     onChanged: (val) => setState(() => envios = val),
-                  //   ),
-                  // ],
-                ],
-              ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: nombreController,
+                  decoration: const InputDecoration(labelText: 'Nombre'),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: correoController,
+                  decoration: const InputDecoration(labelText: 'Correo'),
+                ),
+                const SizedBox(height: 12),
+                DropdownButtonFormField<String>(
+                  value: selectedCity,
+                  items:
+                      ciudades
+                          .map(
+                            (city) => DropdownMenuItem(
+                              value: city.id,
+                              child: Text(city.nombre),
+                            ),
+                          )
+                          .toList(),
+                  onChanged: (val) => selectedCity = val,
+                  decoration: const InputDecoration(labelText: 'Ciudad'),
+                ),
+                const SizedBox(height: 12),
+                DropdownButtonFormField<String>(
+                  value: selectedRole,
+                  items:
+                      roles
+                          .map(
+                            (role) => DropdownMenuItem(
+                              value: role.id,
+                              child: Text(role.nombre),
+                            ),
+                          )
+                          .toList(),
+                  onChanged: (val) => selectedRole = val,
+                  decoration: const InputDecoration(labelText: 'Rol'),
+                ),
+                const SizedBox(height: 12),
+                DropdownButtonFormField<String>(
+                  value: selectedSede,
+                  items:
+                      sedes
+                          .map(
+                            (sede) => DropdownMenuItem(
+                              value: sede.id,
+                              child: Text(sede.name),
+                            ),
+                          )
+                          .toList(),
+                  onChanged: (val) => selectedSede = val,
+                  decoration: const InputDecoration(labelText: 'Sede'),
+                ),
+              ],
             ),
           ),
           actions: [
@@ -100,37 +155,36 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
             ),
             ElevatedButton(
               child: Text(user == null ? 'Crear' : 'Guardar'),
-              onPressed: () {
+              onPressed: () async {
                 if (nombreController.text.trim().isEmpty ||
-                    correoController.text.trim().isEmpty) {
+                    correoController.text.trim().isEmpty ||
+                    selectedCity == null ||
+                    selectedRole == null ||
+                    selectedSede == null) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Completa todos los campos')),
                   );
                   return;
                 }
-                // Aquí deberías implementar la lógica para crear o editar usuarios usando tu UserController
-                // Por simplicidad, solo actualizamos la lista local
+                final userController = UserController();
+                final userProvider = Provider.of<UserProvider>(
+                  context,
+                  listen: false,
+                );
+                final usuarioActual = userProvider.user!;
                 if (user == null) {
-                  // Crear usuario (esto debería hacerse con UserController y recargar la lista)
-                  final nuevoUsuario = model.User(
-                    name: nombreController.text,
-                    email: correoController.text,
-                    // Completa los demás campos requeridos por tu modelo
+                  await userController.crearUsuario(
+                    nombre: nombreController.text.trim(),
+                    email: correoController.text.trim(),
+                    idCiudad: selectedCity,
+                    idRole: selectedRole,
+                    idSede: selectedSede,
+                    telefono: '', // agrega campo si lo necesitas
+                    createdAt: DateTime.now().toIso8601String(),
+                    usuarioActual: usuarioActual,
                   );
-                  setState(() {
-                    usuarios.add(nuevoUsuario);
-                  });
-                } else if (index != null) {
-                  // Editar usuario (esto debería hacerse con UserController y recargar la lista)
-                  final usuarioEditado = model.User(
-                    name: nombreController.text,
-                    email: correoController.text,
-                    // Completa los demás campos requeridos por tu modelo
-                  );
-                  setState(() {
-                    usuarios[index] = usuarioEditado;
-                  });
                 }
+                await _cargarUsuarios();
                 Navigator.pop(context);
               },
             ),

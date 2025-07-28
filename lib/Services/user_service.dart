@@ -4,52 +4,74 @@ import 'package:loginpage/Models/user.dart';
 class UserService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  Future<String> crearUsuario(User user) async {
+  Future<String> crearUsuario(User user, User usuarioActual) async {
     try {
+      final roleDoc =
+          await _firestore.collection('roles').doc(usuarioActual.idRole).get();
+      if (!roleDoc.exists) {
+        throw Exception('Rol no encontrado');
+      }
+      final String? roleName = roleDoc.data()?['nombre'];
+      if (roleName != 'Superadministrador') {
+        throw Exception('Solo un administrador puede crear usuarios');
+      }
+
+      final cityDoc =
+          await _firestore
+              .collection('ciudades')
+              .doc(usuarioActual.idCity)
+              .get();
+      if (!cityDoc.exists) {
+        throw Exception('Ciudad no encontrada');
+      }
+      if (usuarioActual.idCity != user.idCity) {
+        throw Exception('No puedes crear usuarios en otra ciudad');
+      }
+
+      final sedeDoc =
+          await cityDoc.reference.collection('sedes').doc(user.idSede).get();
+      if (!sedeDoc.exists) {
+        throw Exception('Esta sede no existe en la ciudad seleccionada');
+      }
       final docRef = _firestore.collection('usuarios').doc();
       user.id = docRef.id;
       await docRef.set(user.toFirestore());
       return docRef.id;
     } catch (e) {
-      throw Exception('Error al crear usuario: $e');
+      throw Exception('Error al crear usuario: ${e.toString()}');
     }
   }
 
   Future<List<User>> listaUsuariosDeMiCiudadConRol(String idCity) async {
     try {
-      final querySnapshot =
+      final usuariosSnapshot =
           await _firestore
               .collection('usuarios')
               .where('ciudad', isEqualTo: idCity)
               .get();
 
-      if (querySnapshot.docs.isEmpty) return [];
+      if (usuariosSnapshot.docs.isEmpty) return [];
 
-      // Obtener la ciudad solo una vez
       final cityDoc = await _firestore.collection('ciudades').doc(idCity).get();
 
-      // Obtener los roles únicos de los usuarios
+      // Obtener todos los roles necesarios en un solo query
       final roleIds =
-          querySnapshot.docs
-              .map((doc) => doc.data()['id_role'] as String? ?? '')
+          usuariosSnapshot.docs
+              .map((doc) => doc['id_role'] as String)
               .toSet()
-              .where((id) => id.isNotEmpty)
               .toList();
 
-      Map<String, DocumentSnapshot> rolesMap = {};
-      if (roleIds.isNotEmpty) {
-        final rolesQuery =
-            await _firestore
-                .collection('roles')
-                .where(FieldPath.documentId, whereIn: roleIds)
-                .get();
-        rolesMap = {for (var doc in rolesQuery.docs) doc.id: doc};
-      }
+      final rolesSnapshot =
+          await _firestore
+              .collection('roles')
+              .where(FieldPath.documentId, whereIn: roleIds)
+              .get();
 
-      // Construir la lista de usuarios con datos de rol y ciudad
-      return querySnapshot.docs.map((userDoc) {
-        final roleId = userDoc.data()['id_role'] as String? ?? '';
-        final roleDoc = rolesMap[roleId];
+      final rolesMap = {for (var doc in rolesSnapshot.docs) doc.id: doc};
+
+      // Construir la lista de usuarios
+      return usuariosSnapshot.docs.map((userDoc) {
+        final roleDoc = rolesMap[userDoc['id_role']];
         return User.fromFirestore2(userDoc, roleDoc, cityDoc);
       }).toList();
     } catch (e) {

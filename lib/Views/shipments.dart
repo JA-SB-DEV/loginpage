@@ -103,8 +103,14 @@ class _ShipmentsScreenState extends State<ShipmentsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final user = Provider.of<UserProvider>(context).user;
+    final userProvider = Provider.of<UserProvider>(context);
+    final user = userProvider.user;
     final colorScheme = Theme.of(context).colorScheme;
+
+    // Permiso: solo usuarios que NO sean superadministrador pueden crear envíos
+    final puedeCrearEnvio =
+        user != null && user.roleName != 'Superadministrador';
+
     return Scaffold(
       backgroundColor: colorScheme.background,
       appBar: AppBar(
@@ -122,9 +128,11 @@ class _ShipmentsScreenState extends State<ShipmentsScreen> {
         ),
       ),
       floatingActionButton:
-          user?.roleName != 'Superadministrador'
+          puedeCrearEnvio
               ? FloatingActionButton.extended(
-                onPressed: () {},
+                onPressed: () {
+                  // Acción para crear nuevo envío
+                },
                 icon: const Icon(Icons.local_shipping),
                 label: const Text('Nuevo envío'),
                 backgroundColor: colorScheme.primary,

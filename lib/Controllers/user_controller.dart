@@ -8,11 +8,12 @@ class UserController {
   Future<String> crearUsuario({
     required String nombre,
     required String email,
-    required String idCiudad,
+    required String? idCiudad,
     required String createdAt,
     required String telefono,
-    required String idSede,
-    required String idRole,
+    required String? idSede,
+    required String? idRole,
+    required User usuarioActual,
   }) async {
     final nuevoUsuario = User(
       name: nombre,
@@ -24,7 +25,7 @@ class UserController {
       idRole: idRole,
     );
 
-    return await _userService.crearUsuario(nuevoUsuario);
+    return await _userService.crearUsuario(nuevoUsuario, usuarioActual);
   }
 
   Future<List<User>> obtenerUsuariosDeCiudadConRol(String idCity) async {

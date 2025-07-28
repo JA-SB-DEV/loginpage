@@ -4,8 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:loginpage/Controllers/auth_controller.dart';
+import 'package:loginpage/Controllers/city_controller.dart';
 import 'package:loginpage/Controllers/user_provider.dart';
-import 'package:loginpage/Models/ciudad.dart';
+import 'package:loginpage/Models/city.dart';
 import 'package:loginpage/Widgets/BottonNavBar/home.dart';
 import 'package:loginpage/Models/user.dart' as model;
 import 'package:provider/provider.dart';
@@ -22,9 +23,10 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final AuthController auth = AuthController();
+  final CityController cityController = CityController();
 
-  List<Ciudad> ciudadesDisponibles = [];
-  Ciudad? ciudadSeleccionada;
+  List<City> ciudadesDisponibles = [];
+  City? ciudadSeleccionada;
   bool cargandoCiudades = true;
 
   @override
@@ -34,7 +36,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> cargarCiudades() async {
-    final ciudades = await obtenerTodasCiudades();
+    final ciudades = await cityController.obtenerCiudadesActivas();
     setState(() {
       ciudadesDisponibles = ciudades;
       cargandoCiudades = false;
@@ -148,7 +150,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     const SizedBox(height: 24),
                     cargandoCiudades
                         ? Center(child: CircularProgressIndicator())
-                        : DropdownButtonFormField<Ciudad>(
+                        : DropdownButtonFormField<City>(
                           value: ciudadSeleccionada,
                           isExpanded: true,
                           decoration: InputDecoration(
@@ -182,12 +184,12 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                           items:
                               ciudadesDisponibles.map((ciudad) {
-                                return DropdownMenuItem<Ciudad>(
+                                return DropdownMenuItem<City>(
                                   value: ciudad,
                                   child: Text(ciudad.nombre),
                                 );
                               }).toList(),
-                          onChanged: (Ciudad? newValue) {
+                          onChanged: (City? newValue) {
                             setState(() {
                               ciudadSeleccionada = newValue;
                               selectedCity = newValue?.nombre;
