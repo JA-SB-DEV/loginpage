@@ -7,6 +7,7 @@ import 'package:loginpage/Controllers/auth_controller.dart';
 import 'package:loginpage/Controllers/city_controller.dart';
 import 'package:loginpage/Controllers/user_provider.dart';
 import 'package:loginpage/Models/city.dart';
+// import 'package:loginpage/Views/Management/settings.dart';
 import 'package:loginpage/Widgets/BottonNavBar/home.dart';
 import 'package:loginpage/Models/user.dart' as model;
 import 'package:provider/provider.dart';
@@ -20,8 +21,12 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   String? selectedCity;
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController(
+    text: 'admin@heris.com',
+  );
+  final TextEditingController _passwordController = TextEditingController(
+    text: '123456',
+  );
   final AuthController auth = AuthController();
   final CityController cityController = CityController();
 
@@ -39,6 +44,11 @@ class _LoginScreenState extends State<LoginScreen> {
     final ciudades = await cityController.obtenerCiudadesActivas();
     setState(() {
       ciudadesDisponibles = ciudades;
+      selectedCity = 'Valledupar';
+      ciudadSeleccionada = ciudadesDisponibles.firstWhere(
+        (city) => city.nombre == selectedCity,
+        orElse: () => City(id: '', nombre: selectedCity!, activa: true),
+      );
       cargandoCiudades = false;
     });
   }

@@ -67,6 +67,7 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
 
     final nombreController = TextEditingController(text: user?.name ?? '');
     final correoController = TextEditingController(text: user?.email ?? '');
+    final telefonoController = TextEditingController(text: user?.phone ?? '');
     String? selectedCity =
         user?.idCity ?? (ciudades.isNotEmpty ? ciudades.first.id : null);
     String? selectedRole =
@@ -88,62 +89,82 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
             style: GoogleFonts.inter(fontWeight: FontWeight.w600),
           ),
           content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
+            child: Row(
               children: [
-                TextField(
-                  controller: nombreController,
-                  decoration: const InputDecoration(labelText: 'Nombre'),
+                Expanded(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      TextField(
+                        controller: nombreController,
+                        decoration: const InputDecoration(labelText: 'Nombre'),
+                      ),
+                      const SizedBox(height: 12),
+                      TextField(
+                        controller: correoController,
+                        decoration: const InputDecoration(labelText: 'Correo'),
+                      ),
+                      const SizedBox(height: 12),
+                      TextField(
+                        controller: telefonoController,
+                        decoration: const InputDecoration(
+                          labelText: 'Teléfono',
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: correoController,
-                  decoration: const InputDecoration(labelText: 'Correo'),
-                ),
-                const SizedBox(height: 12),
-                DropdownButtonFormField<String>(
-                  value: selectedCity,
-                  items:
-                      ciudades
-                          .map(
-                            (city) => DropdownMenuItem(
-                              value: city.id,
-                              child: Text(city.nombre),
-                            ),
-                          )
-                          .toList(),
-                  onChanged: (val) => selectedCity = val,
-                  decoration: const InputDecoration(labelText: 'Ciudad'),
-                ),
-                const SizedBox(height: 12),
-                DropdownButtonFormField<String>(
-                  value: selectedRole,
-                  items:
-                      roles
-                          .map(
-                            (role) => DropdownMenuItem(
-                              value: role.id,
-                              child: Text(role.nombre),
-                            ),
-                          )
-                          .toList(),
-                  onChanged: (val) => selectedRole = val,
-                  decoration: const InputDecoration(labelText: 'Rol'),
-                ),
-                const SizedBox(height: 12),
-                DropdownButtonFormField<String>(
-                  value: selectedSede,
-                  items:
-                      sedes
-                          .map(
-                            (sede) => DropdownMenuItem(
-                              value: sede.id,
-                              child: Text(sede.name),
-                            ),
-                          )
-                          .toList(),
-                  onChanged: (val) => selectedSede = val,
-                  decoration: const InputDecoration(labelText: 'Sede'),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      DropdownButtonFormField<String>(
+                        value: selectedCity,
+                        items:
+                            ciudades
+                                .map(
+                                  (city) => DropdownMenuItem(
+                                    value: city.id,
+                                    child: Text(city.nombre),
+                                  ),
+                                )
+                                .toList(),
+                        onChanged: (val) => selectedCity = val,
+                        decoration: const InputDecoration(labelText: 'Ciudad'),
+                      ),
+                      const SizedBox(height: 12),
+                      DropdownButtonFormField<String>(
+                        value: selectedRole,
+                        items:
+                            roles
+                                .map(
+                                  (role) => DropdownMenuItem(
+                                    value: role.id,
+                                    child: Text(role.nombre),
+                                  ),
+                                )
+                                .toList(),
+                        onChanged: (val) => selectedRole = val,
+                        decoration: const InputDecoration(labelText: 'Rol'),
+                      ),
+                      const SizedBox(height: 12),
+                      DropdownButtonFormField<String>(
+                        value: selectedSede,
+                        items:
+                            sedes
+                                .map(
+                                  (sede) => DropdownMenuItem(
+                                    value: sede.id,
+                                    child: Text(sede.name),
+                                  ),
+                                )
+                                .toList(),
+                        onChanged: (val) => selectedSede = val,
+                        decoration: const InputDecoration(labelText: 'Sede'),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -158,6 +179,7 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
               onPressed: () async {
                 if (nombreController.text.trim().isEmpty ||
                     correoController.text.trim().isEmpty ||
+                    telefonoController.text.trim().isEmpty ||
                     selectedCity == null ||
                     selectedRole == null ||
                     selectedSede == null) {
@@ -176,10 +198,10 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
                   await userController.crearUsuario(
                     nombre: nombreController.text.trim(),
                     email: correoController.text.trim(),
+                    telefono: telefonoController.text.trim(),
                     idCiudad: selectedCity,
                     idRole: selectedRole,
                     idSede: selectedSede,
-                    telefono: '', // agrega campo si lo necesitas
                     createdAt: DateTime.now().toIso8601String(),
                     usuarioActual: usuarioActual,
                   );
